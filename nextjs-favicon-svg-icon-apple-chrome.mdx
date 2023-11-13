@@ -57,7 +57,7 @@ I took the SVG icon I created and uploaded it to [RealFaviconGenerator.net](http
 3. android-chrome-192x192.png 
 4. android-chrome-512x512.png
 
-It also generated a file named `site.webmanifest`, but I will show my own manifest file below. You can also discard the other generated files.
+It also generated a file named `site.webmanifest`, but I will show my own manifest file below. You can also discard any other generated files.
 
 ### Step Three: Rename Files 
 
@@ -67,7 +67,9 @@ Not all of the files listed above have names that are compatible with Next.js. S
 
 You need the **Web Manifest** to identify the two `android-chrome` icons. You won't see a direct link to these icons in the `<head>` element, but you will see a link to the manifest file. 
 
-The [Next.js manifest docs](https://nextjs.org/docs/app/api-reference/file-conventions/metadata/manifest) allow for a static file or for a generated file. The manifest must be named `manifest.json` or `manifest.webmanifest` and be at the root level of the app directory. 
+The [Next.js manifest docs](https://nextjs.org/docs/app/api-reference/file-conventions/metadata/manifest) allow for a static file or for a generated file. The manifest must be named `manifest.json` or `manifest.webmanifest` and be at the root level of the app directory.
+
+I opted to generate my manifest with the function provided in the Next.js docs. 
 
 Here is what my `manifest.ts` file contains:
 
@@ -100,7 +102,7 @@ export default function manifest(): MetadataRoute.Manifest {
 ```
 If you are curious about the settings above, you can read the [Web Manifest specs](https://developer.mozilla.org/en-US/docs/Web/Manifest). If you leave some of these out, [Lighthouse](https://developer.chrome.com/en/docs/lighthouse/) may complain when evaluating your site.
 
-**Note:** You only need to provide info for the two `android-chrome` icons in this file. 
+**Note:** You only need to provide info for the two `android-chrome` icons in this file as I did above. 
 
 ## Step Five: Where to Put Your Files 
 
@@ -110,7 +112,9 @@ You should now have the following files in root of your app directory:
 2. icon.svg 
 3. manifest.ts 
 
-_And you should have the `android-chrome` icons in your `public` folder._ I'm using an `images` folder inside, so notice my manifest file has `/images/icon-192.png`. You do not have to specify your `public` folder in the manifest.
+_And you should have the `android-chrome` icons in your `public` folder._ 
+
+I'm using an `images` folder inside my public folder, so notice my manifest file has `/images/icon-192.png`. You do not have to specify your `public` folder as part of the file path in the manifest.
 
 ## Step Six: Build Your App 
 
