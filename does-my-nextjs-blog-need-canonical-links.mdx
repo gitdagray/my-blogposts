@@ -17,7 +17,7 @@ Surprisingly, MDN [doesn't provide much info](https://developer.mozilla.org/en-U
 
 Google's developer site [provides much more information](https://developers.google.com/search/docs/crawling-indexing/canonicalization) including a definition of _canonicalization_: 
 
-> "Canonicalization is the process of selecting the representative –canonical– URL of a piece of content."
+> Canonicalization is the process of selecting the representative –canonical– URL of a piece of content.
 
 The same Google site provides more info on how a canonical URL can be specified: 
 
@@ -42,7 +42,7 @@ By providing a canonical link in the `<head>` of my pages like the one below...
 
 And as [DEV](https://dev.to/faq) notes on their FAQ page: 
 
-> "You can set the canonical_url of your post before publishing so that Google knows where to send the link juice (that precious, precious link juice)."
+> You can set the canonical_url of your post before publishing so that Google knows where to send the link juice (that precious, precious link juice).
 
 In fact, all three sites I mentioned above allow you to provide the canonical URL of the content you share. 
 
@@ -93,7 +93,7 @@ export async function generateMetadata({ params: { postId } }: Props) {
 ```
 Also worth noting: Next.js will take the trailing slash from your base URL and a leading slash from your canonical path and merge them so you get one / and not //.
 
-Now when I `npm run dev`, I can open devtools and see the following in the `<head>` of my blog post pages: 
+Now when I `npm run dev`, I can open devtools and see code like the following in the `<head>` of my blog post pages: 
 ```html 
 <link rel="canonical" href="https://www.davegray.codes/posts/nextjs-favicon-svg-icon-apple-chrome">
 ```
