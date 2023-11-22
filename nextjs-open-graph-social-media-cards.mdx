@@ -19,11 +19,11 @@ Simply put, you want your blog posts to stand out when they are shared on social
 
 If you don't provide Open Graph metadata in your blog, a post might look like this when you share it:
 
-        <CustomImage src="https://raw.githubusercontent.com/gitdagray/my-blogposts/main/images/tweet-without-open-graph.jpg" alt="Tweet without Open Graph metadata" width={1080} height={727} />
+        <CustomImage src="https://raw.githubusercontent.com/gitdagray/my-blogposts/main/images/tweet-without-open-graph.jpg" alt="Tweet without Open Graph metadata" width={400} height={269} />
 
 But if you do provide Open Graph metadata, a shared post might look like this instead: 
 
-        <CustomImage src="https://raw.githubusercontent.com/gitdagray/my-blogposts/main/images/tweet-with-open-graph.jpg" alt="Tweet with Open Graph metadata" width={1079} height={1469} />
+        <CustomImage src="https://raw.githubusercontent.com/gitdagray/my-blogposts/main/images/tweet-with-open-graph.jpg" alt="Tweet with Open Graph metadata" width={400} height={545} />
 
 ## How to Add Open Graph Social Media Cards to Your Blog 
 
@@ -56,7 +56,7 @@ openGraph: {
 I should share a few things about the above code with you: 
 
 - It is only the `openGraph` part of my larger [metadata object](https://nextjs.org/docs/app/api-reference/functions/generate-metadata#the-metadata-object). 
-- I'm hosting the image for my homepage at [Cloudinary](https://cloudinary.com/) right now, but you could host yours in your GitHub repo or anywhere you want. 
+- I'm hosting the image for my homepage in my GitHub repository with my MDX files, but you could host yours anywhere you want. 
 - The typical image size for Open Graph images is `1200x630`, but you can look at the [specific image sizes for several platforms](https://simplified.com/blog/design/open-graph-image-everything-you-need-to-know/). I've tried out `1200x630` on Twitter, Facebook, and LinkedIn with success. 
 - You can read the Open Graph specifications for [valid `type` values](https://ogp.me/#types).
 
@@ -122,9 +122,9 @@ To examine how Twitter, LinkedIn, and Facebook use the metadata above, you can s
 
 ### 2. Dynamic Data 
 
-The static approach isn't too efficient for blog article pages. They should provide page specific data, and just like your Next.js blog pages, you can create this metadata dynamically. 
+The static approach isn't too efficient for blog article pages. They should provide page specific data, and just like your dynamically generated Next.js blog pages, you can create this metadata dynamically. 
 
-I previously discussed generating metadata for dynamic post pages in a blog post about [ordering and merging metadata in Next.js](https://www.davegray.codes/posts/nextjs-ordering-merging-metadata). The examples I show you below will be part of a larger metadata object that is returned by the [`generateMetadata` function](https://nextjs.org/docs/app/api-reference/functions/generate-metadata#generatemetadata-function).
+I previously discussed generating metadata for dynamic pages in a blog post about [ordering and merging metadata in Next.js](https://www.davegray.codes/posts/nextjs-ordering-merging-metadata). The examples I show you below will be part of a larger metadata object that is returned by the [`generateMetadata` function](https://nextjs.org/docs/app/api-reference/functions/generate-metadata#generatemetadata-function).
 
 Since we have now discussed both the `openGraph` and `twitter` metadata objects that Next.js uses, I'm going to provide you with one larger example that includes both: 
 
@@ -205,16 +205,16 @@ If you do choose this approach, be sure to create the necessary `opengraph-image
 
 An interesting feature of Next.js is the ability to [generate dynamic Open Graph and Twitter images](https://nextjs.org/docs/app/api-reference/file-conventions/metadata/opengraph-image#generate-images-using-code-js-ts-tsx).
 
-You can style the created images with CSS just like you would the rest of your app. This approach uses the `edge` runtime to speed up things up, too. 
+You can style the created images with CSS just like you would the rest of your app. This approach uses the `edge` runtime to speed things up, too. 
 
 _Why didn't I choose to use this feature_? 
 
-In the end, it seems like a quick way to generate generic images with a color background and text overlay. You could spend more time with it to pull in unique cover images, too, but I already easily pull images from my GitHub repo. And most social media sites will already pull in your article title from your Open Graph metadata and compile a card with that text and your image. 
+In the end, it seems like a quick way to generate generic images with a color background and text overlay. You could spend more time with it to pull in unique cover images, too, but I already easily pull in images from my GitHub repo. Most social media sites will already pull in your article title text from your Open Graph metadata and compile a card with it and your Open Graph image. 
 
-I may spend some more time with Next.js image generation in the future. The [ImageResponse API](https://nextjs.org/docs/app/api-reference/functions/image-response) it uses looks fun, and I think I could use it to generate a dynamic social card for my homepage.
+I may spend some more time with Next.js image generation in the future. The [ImageResponse API](https://nextjs.org/docs/app/api-reference/functions/image-response) looks fun, and I think I could use it to generate a dynamic social card for my homepage.
 
-If the image generation approach has peaked your curiosity, don't wait for me - go for it!
+If the image generation approach has peaked your curiosity, don't wait for me - _go for it!_
 
-Until next time, you can share any of my [blog posts](https://www.davegray.codes/) to see how the different social media platforms create social media cards compiled from my Open Graph and Twitter metadata. 
+In the meantime, you can share any of my [blog posts](https://www.davegray.codes/) to see how the different social media platforms create social media cards from my Open Graph and Twitter metadata. 
 
 
