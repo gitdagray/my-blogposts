@@ -1,8 +1,8 @@
 ---
 title: 'Next.js: How to Submit Your Sitemap to Google'
 description: 'After creating a sitemap for your Next.js website, you need to submit your sitemap to Google.'
-date: '2023-11-12'
-modified: '2023-11-12'
+date: '2023-11-26'
+modified: '2023-11-26'
 tags: ['next.js','nextjs','seo']
 ---
 
@@ -33,9 +33,9 @@ Google allows you to [choose a verification method](https://support.google.com/w
 - Google Sites, Blogger, or Domains account 
 - Domain name provider 
 
-For my Next.js blog, I chose the [HTML Tag site verification](https://support.google.com/webmasters/answer/9008080?sjid=5341002539176209972-NC#meta_tag_verification) option. This requires adding an additional [metadata](https://www.davegray.codes/posts/nextjs-ordering-merging-metadata) tag in the `<head>` section of your site's non-logged in home page. 
+For my Next.js blog, I chose the [HTML tag site verification](https://support.google.com/webmasters/answer/9008080?sjid=5341002539176209972-NC#meta_tag_verification) option. This requires adding an additional [metadata](https://www.davegray.codes/posts/nextjs-ordering-merging-metadata) tag in the `<head>` section of your site's non-logged in home page. 
 
-To provide for verification metadata, Next.js supports a [verification object](https://nextjs.org/docs/app/api-reference/functions/generate-metadata#verification) in the metadata type it creates your project's metadata tags from. I previously discussed [creating a metadata object](https://www.davegray.codes/posts/nextjs-ordering-merging-metadata) for my Next.js blog and that discussion might help you understand the overall approach.
+To provide for verification metadata, Next.js supports a [verification object](https://nextjs.org/docs/app/api-reference/functions/generate-metadata#verification) in the metadata type it creates your project's metadata tags from. My discussion of [creating a metadata object](https://www.davegray.codes/posts/nextjs-ordering-merging-metadata) for my Next.js blog might help you understand the overall approach.
 
 I put the following code in the root `layout.tsx` file of my project as part of the larger [metadata object](https://nextjs.org/docs/app/api-reference/functions/generate-metadata#the-metadata-object) Next.js creates. 
 
@@ -50,12 +50,12 @@ After adding the new verification metadata to your site and redeploying to the w
 ```html 
 <meta name="google-site-verification" content="YOUR-VERIFICATION-CODE-PROVIDED-BY-GOOGLE">
 ```
-Now you can go back to the search console for Google to verify your site ownership. This should happen very quickly. 
+Now you can go back to the search console to tell Google to verify your site ownership. Google should be able to verify your site ownership very quickly. 
 
 ## 3. Submit Your Sitemap 
 
 You have now verified the ownership of your site, and you can [submit your sitemap](https://search.google.com/search-console/sitemaps) in the Google Search Console.
 
-And now the wait begins for your site to be indexed. I know you may be anxious (_just like I was_) to see results, but Google will usually take a few days before it crawls and indexes your site. 
+Now the wait begins for your site to be indexed. I know you may be anxious ( _just like I was_ ) to see results, but Google will usually take a few days before it crawls and indexes your site. 
 
 Go back to the Search Console in a couple of days to see if Google has visited your site. The Search Console has an Indexing section where it will tell you the last date your sitemap was read by Google, the status, number of discovered pages, and let you dive into reports for single pages, too. 
