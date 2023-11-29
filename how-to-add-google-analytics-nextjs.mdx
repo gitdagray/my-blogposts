@@ -1,0 +1,92 @@
+---
+title: 'How to Add Google Analytics to Your Next.js Website'
+description: 'Track the performance of your Next.js website with Google Analytics in a few simple steps.'
+date: '2023-11-28'
+modified: '2023-11-28'
+tags: ['next.js','nextjs','seo']
+---
+
+My recent articles have focused on [metadata](https://www.davegray.codes/posts/nextjs-ordering-merging-metadata) and the overall search engine optimization (SEO) of Next.js websites by showing how to build [sitemaps](https://www.davegray.codes/posts/nextjs-how-to-build-sitemap-robots-txt) and [RSS feeds](https://www.davegray.codes/posts/nextjs-how-to-build-an-rss-feed). However, you won't see how those things impact your website if you don't keep track of how your website performs. 
+
+That's why this article is about adding [Google Analytics](https://analytics.google.com/) to your Next.js website. 
+
+## 1. Sign Up for a Free Google Analytics Account 
+
+You can sign up on the [Google Analytics website](https://marketingplatform.google.com/about/analytics/).
+
+With Google Analytics, you can:
+- measure your website performance
+- identify your target audience 
+- optimize your content  
+
+After you create an account, you will be provided with JavaScript code you need to insert into your website. 
+
+## 2. Adding Google Analytics JS to Your Next.js Website 
+
+You can accomplish this with the [Next.js Script component](https://nextjs.org/docs/app/api-reference/components/script).
+
+The first part of the JS code snippet is straightforward. It contains your Google Analytics ID, so just note that you need to get that from the code Google provides. 
+
+You will need to insert the JS code snippet in your root `layout.tsx` file _after_ the closing `</body>` tag.
+
+Here's what my file looks like with the first `<Script>` component added:
+
+```tsx
+import Script from 'next/script'
+
+// rest of my layout.tsx file here...
+
+return (
+    <html lang="en">
+        <body>
+            {children}
+        </body>
+        <Script async src="https://www.googletagmanager.com/gtag/js?id=G-YOUR-ID-NUMBER" />
+    </html>
+)
+```
+
+The second `<Script>` component you need to add will use what the Next.js docs refer to as [inline scripts](https://nextjs.org/docs/app/building-your-application/optimizing/scripts#inline-scripts). 
+
+This part of the Google Analytics JS code snippet is provided from Google between traditional opening and closing HTML `<script>` tags. In Next.js, when you use the `<Script>` component in this way, you need to wrap the enclosed JS code with curly braces { } and backticks. You also need to give the opening tag an `id="gtag"` attribute. 
+
+Here's my code with the 2nd Google Analytics JS code snippet included:
+
+```tsx
+import Script from 'next/script'
+
+// the rest of my layout.tsx file here...
+
+return (
+    <html lang="en">
+        <body>
+            {children}
+        </body>
+        <Script async src="https://www.googletagmanager.com/gtag/js?id=G-YOUR-ID-NUMBER" />
+        <Script id="gtag">
+            {`window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-YOUR-ID-NUMBER');`}
+        </Script>
+    </html>
+)
+```
+
+## 3. Check Your Output 
+
+You can run your Next.js project in dev mode with `npm run dev` to see how this Google Analytics code looks in your web pages. Just open devtools to inspect your page. Near the bottom _but before_ the closing `</body>` tag, you should see something like this: 
+
+```html 
+<script src="https://www.googletagmanager.com/gtag/js?id=G-YOUR-ID-NUMBER" async="true" data-nscript="afterInteractive"></script>
+<script id="gtag" data-nscript="afterInteractive">
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-YOUR-ID-NUMBER');
+</script>
+```
+
+Finally, you will need to deploy your site to publish the changes to the web, and you should be able to tell Google Analytics to verify it can find the code on your deployed Next.js website. 
+
+There's a lot you can do in the Google Analytics dashboard. I recommend you use the setting that lets you connect the dashboard to your [Google Search Console](https://search.google.com/search-console/about) where you [submit your sitemap](https://www.davegray.codes/posts/nextjs-how-to-submit-your-sitemap).
