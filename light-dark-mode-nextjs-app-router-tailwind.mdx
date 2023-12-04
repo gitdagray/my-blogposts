@@ -45,7 +45,6 @@ The [next-themes](https://github.com/pacocoursey/next-themes) GitHub repository 
 First, create a `providers.tsx` file inside your `app` folder like this:
 ```tsx 
 // app/providers.tsx
-
 'use client'
 
 import { ThemeProvider } from 'next-themes'
@@ -57,6 +56,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
 Next, add the `<Providers>` component to your root `layout.tsx` by placing it _inside_ the `<body>` tag: 
 ```tsx 
+// app/layout.tsx
+
 export default function RootLayout({
   children,
 }: {
