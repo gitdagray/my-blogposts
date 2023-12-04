@@ -1,26 +1,26 @@
 ---
 title: 'Light & Dark Mode in Next.js App Router + Tailwind with No Flicker'
 description: 'You can toggle light and dark mode themes in Next.js + TailwindCSS while avoiding a page flicker.'
-date: '2023-12-01'
-modified: '2023-12-01'
+date: '2023-12-04'
+modified: '2023-12-04'
 tags: ['webdev','react','nextjs','tailwindcss','blog']
 ---
 
-Applying light and [dark mode](https://tailwindcss.com/docs/dark-mode) themes with TailwindCSS is easy. However, if you want to allow users to toggle between light and dark mode themes while also identifying the system preference setting at load time and avoid a page flicker, things get a little more complicated.
+Applying light and [dark mode](https://tailwindcss.com/docs/dark-mode) themes with TailwindCSS is easy. However, if you want to allow users to toggle between light and dark mode themes while also identifying the system preference setting at load time and avoiding a page flicker, things get a little more complicated.
 
-Here's how I did it: 
-
-## 1. Why This Is Challenging 
+## Why This Is Challenging 
 
 Next.js [generates static pages](https://nextjs.org/docs/app/building-your-application/upgrading/app-router-migration#static-site-generation-getstaticprops) on the server before sending them to the browser (aka "the client"). This helps keep things fast and websites seem snappy, but the server cannot read what user preferences will be. The server has no idea in advance that John prefers light-mode in his browser and Jane prefers dark-mode in her browser. 
 
 The best you can do is apply the [TailwindCSS dark mode](https://tailwindcss.com/docs/dark-mode) variant in advance that will read the [prefers-color-scheme](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-color-scheme) user system setting and apply the dark mode theme if that is preferred.
 
-When you try to allow a user to manually toggle the light-dark mode theme setting, you need to read the system preference first. If they do toggle the setting, you want to save the new setting in [`localStorage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage). However, `localStorage` is only available in the browser. Your server components won't be able to read this setting, and this situation can cause a theme _flash_ when your site loads due to an incorrect theme being applied for a split second. 
+When you want to allow a user to manually toggle the light-dark mode theme setting, you need to read the system preference first. If they do toggle the setting, you want to save the new setting in [`localStorage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage). However, `localStorage` is only available in the browser. Your server components won't be able to read this setting, and this situation can cause a theme _flash_ when your site loads due to an incorrect theme being applied for a split second. 
 
 Fortunately, the [next-themes](https://github.com/pacocoursey/next-themes) package can help avoid this issue while allowing users the ability to toggle between light and dark mode in your Next.js website.
 
-## 2. Toggling dark mode manually in TailwindCSS
+Here's how I applied `next-themes` with TailwindCSS to my blog:
+
+## 1. Edit your TailwindCSS config file
 
 You need to make one addition to your `tailwind.config.ts` file if you want to [toggle dark mode manually](https://tailwindcss.com/docs/dark-mode#toggling-dark-mode-manually). You must add a `darkMode` setting with a `class` value. 
 
@@ -33,7 +33,7 @@ module.exports = {
 }
 ```
 
-## 3. next-themes 
+## 2. next-themes 
 
 Now you are ready to add `next-themes` to your project by typing the following in your terminal:
 ```bash
@@ -74,13 +74,13 @@ export default function RootLayout({
 }
 ```
 
-## 4. suppressHydrationWarning
+## 3. suppressHydrationWarning
 
 Notice the [suppressHydrationWarning](https://legacy.reactjs.org/docs/dom-elements.html#suppresshydrationwarning) setting inside the `<html>` tag. As noted in the GitHub repo for [next-themes](https://github.com/pacocoursey/next-themes), if you do not apply this setting, you will get warnings because the `<html>` element _is being updated_ by next-themes. 
 
 The React docs discuss [suppressHydrationWarning](https://legacy.reactjs.org/docs/dom-elements.html#suppresshydrationwarning). The use of it by `next-themes` is exactly as intended. You are telling Next.js you want to override what the server may have sent because it _does not match_ the user setting saved in `localStorage`. 
 
-## 5. useTheme 
+## 4. useTheme 
 
 Your implementation of `next-themes` is not complete until you create a component allowing users to manually change the themes. I called my component `ThemeSwitch.tsx`. 
 
@@ -130,15 +130,15 @@ The goal is to allow users to click an icon to change the theme. If they click t
 
 I start by importing the icons I want to use. Then I bring in both `useState` and `useEffect` followed by `useTheme` from `next-themes` and the `<Image>` component from Next.js. 
 
-You must keep track of the mounted state because you cannot use the `setTheme` function from the `useTheme` hook unless you know you are on the client-side. Without this check, you will get a hydration mismatch warning when rendering on the server. This is because the server will not know the user theme preference. 
+You must keep track of the mounted state because you cannot use the `setTheme` function from the `useTheme` hook unless you know your code is running in the browser. Without this check, you will get a hydration mismatch warning when initially rendering the component on the server. Components rendering on the server will not use hooks and cannot access client-side `localStorage`. 
 
-You need to check this inside of the `useEffect` hook that only runs on component mount when it has an empty dependency array. 
+You need to set the mount state inside of the `useEffect` hook that only runs on component mount in the client when it has an empty dependency array. This insures it will only run in the browser.
 
 If the component is _not mounted_, it renders a placeholder image to avoid [cumulative layout shift](https://web.dev/articles/cls). 
 
 If the component _is mounted_, it checks the `resolvedTheme` value from the `useTheme` hook and provides the correct icon. 
 
-## 6. End Result 
+## 5. End Result 
 
 You should now have a Next.js website that not only applies the user system preference, but also remembers any user changes to the light and dark mode theme preference specifically for your site. Therefore, a user may have a system preference of light mode, but still choose a default dark mode for your website.  
 
