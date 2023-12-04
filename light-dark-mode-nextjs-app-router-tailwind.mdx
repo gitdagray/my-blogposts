@@ -138,9 +138,11 @@ If the component is _not mounted_, it renders a placeholder image to avoid [cumu
 
 If the component _is mounted_, it checks the `resolvedTheme` value from the `useTheme` hook and provides the correct icon. 
 
+Note: I did not have to add code for saving the theme choice in `localStorage`. `next-themes` handles that for you.
+
 ## 5. End Result 
 
-You should now have a Next.js website that not only applies the user system preference, but also remembers any user changes to the light and dark mode theme preference specifically for your site. Therefore, a user may have a system preference of light mode, but still choose a default dark mode for your website.  
+You should now have a Next.js website that not only applies the user system preference, but also remembers any user changes to the light and dark mode theme preference specifically for your site. Therefore, a user may have a system preference of light mode, but can still choose a default dark mode for your website.  
 
 This should _not_ result in a page [flash](https://github.com/pacocoursey/next-themes#the-flash), but the `next-themes` docs do say your website _may still flash in dev mode_. Even if so, in production mode, there should be no flash. 
 
