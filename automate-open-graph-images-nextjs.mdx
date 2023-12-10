@@ -252,7 +252,17 @@ When you create dynamic open graph images, Next.js also adds the related meta ta
 <meta property="og:image:alt" content="Posts about nextjs">
 <meta property="og:image:type" content="image/png">
 ```
-**Note:** Everything above also applies to the `twitter-image.tsx` files you can create as well. The _only difference_ between my opengraph and twitter files is the background image I applied to each and the chosen color of an icon. Share my homepage on [X.com](https://x.com/) and on [LinkedIn](https://www.linkedin.com/) to see the difference. You can do the same with my tag results pages like the one for [articles tagged with nextjs](https://www.davegray.codes/tags/nextjs).
+## 4. Twitter Images (X.com) 
+
+Everything discussed above also applies to the `twitter-image.tsx` files you can create as well. The _only difference_ between my opengraph and twitter files is the background image I applied to each and the chosen color of an icon. Share my homepage on [X.com](https://x.com/) and on [LinkedIn](https://www.linkedin.com/) to see the difference. You can do the same with my tag results pages like the one for [articles tagged with nextjs](https://www.davegray.codes/tags/nextjs).
+
+Here's what my twitter image for the tag `nextjs` looks like:
+
+    <CustomImage src="https://www.davegray.codes/tags/nextjs/twitter-image/nextjs?6f38845728b6d005" alt="Twitter image for the tag nextjs" width={1200} height={630} />
+
+And here's what the twitter image for my homepage looks like: 
+
+    <CustomImage src="https://www.davegray.codes/twitter-image?6269119bae970ac4" alt="Twitter image for my blog homepage" width={1200} height={630} />
 
 The metadata Next.js creates for your `twitter-image` is different than the metadata for your `opengraph-image`. Here are the meta tags you should find inside your `<head>` element: 
 
@@ -264,7 +274,7 @@ The metadata Next.js creates for your `twitter-image` is different than the meta
 <meta name="twitter:image:type" content="image/png">
 ```
 
-## 4. View Your Images 
+## 5. View Your Images 
 
 In dev mode, you can open up devtools, grab the URL for your open graph image from the meta tag, and paste it into another browser tab to display your image. 
 
@@ -277,7 +287,7 @@ The last suggestion is the _only way_ to currently test images on [X.com](https:
 
 **Remember:** Add a random parameter to the end of your URL to get the social media sites to refresh their cached image: `?random`, `?abc`, etc.
 
-## 5. The Developer Experience 
+## 6. The Developer Experience 
 
 The specialized route handlers `opengraph-image` and `twitter-image` were introduced in Next.js version 13.3. If you already know how to create dynamic pages in Next.js, these files follow that pattern. This makes the learning curve intuitive.
 
@@ -285,6 +295,6 @@ One noticeable impact to the DX while working with these files - _especially whi
 
 The [ImageResponse](https://nextjs.org/docs/app/api-reference/functions/image-response) constructor is limited in what it supports. I mentioned ugly code earlier. The ugliness is really due to [limited support for CSS properties](https://nextjs.org/docs/app/api-reference/functions/image-response#supported-css-properties) and the need to inline all CSS with `style`. I would prefer to use Tailwind as I have on the rest of my site instead of applying inline styles. Not all CSS styles are supported either. I would like to see more support for CSS and possibly Tailwind inside of the ImageResponse constructor. 
 
-## 6. An Additional Option 
+## 7. An Additional Option 
 
 You can learn a lot by looking at [leerob's blog repo](https://github.com/leerob/leerob.io/tree/main) which is open to the public. As of this writing (December 2023), Lee's blog has not yet adopted the specialized `opengraph-image` and `twitter-image` files. Instead, he is using a [standard `route` handler file](https://github.com/leerob/leerob.io/blob/main/app/og/route.tsx) to dynamically create his open graph images, and that is always an additional option.
