@@ -1,0 +1,159 @@
+---
+title: 'Next.js: How to Build an RSS Feed'
+description: "Your Next.js blog can benefit from providing an RSS feed."
+date: '2023-11-21'
+modified: '2023-11-21'
+tags: ['nextjs','blog','webdev','seo']
+cover_image: true
+---
+
+Your Next.js blog can benefit from providing an **RSS feed**. In this article, I'll discuss what RSS is, why you should provide it, and most importantly, _how to build an RSS feed with Next.js_. 
+
+## What is RSS? 
+
+[RSS is an acronym for _Really Simple Syndication_](https://www.rssboard.org/rss-specification) and is a Web content syndication format. You can read the [RSS specification](https://www.rssboard.org/rss-specification) for all of the details. 
+
+## Why Should I Provide an RSS Feed for My Blog?
+
+Providing an RSS feed will allow your readers to subscribe to your blog updates [with their browsers](https://www.google.com/search?q=read+rss+feed+in+browser) or  dedicated [RSS Readers](https://www.google.com/search?q=best+rss+feed+reader). 
+
+But the **RSS feed** benefits don't stop with subscribers. 
+
+I previously discussed [canonical links and cross-posting](https://www.davegray.codes/posts/does-my-nextjs-blog-need-canonical-links) to popular blog sites like [DEV](https://dev.to/tessak22/connecting-your-rss-feed-url-for-easy-publishing-to-dev-to-31de) and [Hashnode](https://support.hashnode.com/en/articles/6427208-rss-importer). Both of those sites allow you to provide your RSS feed as a way to import your articles.
+
+[Google will also accept an RSS feed as a sitemap](https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap#rss). However, I recommend a separate sitemap, and I previously discussed [how to build a sitemap with Next.js](https://www.davegray.codes/posts/nextjs-how-to-build-sitemap-robots-txt).
+
+## How to Build an RSS Feed with Next.js
+
+Next.js does not offer built-in support for creating an RSS feed as of this writing (November, 2023), but it would not surprise me if it is provided in the future. After all, Next.js already provides [built-in sitemap generation support](https://nextjs.org/docs/app/api-reference/file-conventions/metadata/sitemap) as of version 13.3.
+
+_No worries, you can build an RSS feed in Next.js on your own_. 
+
+### RSS dependency 
+
+Start by adding the [`rss` dependency](https://www.npmjs.com/package/rss) to your project by typing the following in your terminal: 
+
+```bash 
+npm i rss
+```
+You should now see it listed under `dependencies` in your `package.json` file.
+
+### Static Route Handler 
+
+You need to create a [static route handler](https://nextjs.org/docs/app/building-your-application/deploying/static-exports#route-handlers) in Next.js. 
+
+Inside your `app` directory, create a new folder. You can name the folder `feed.xml`, `webfeed.xml` or `channel.xml` if you want to stick with standard naming conventions. It must end with `.xml`. This will be the name of the file you generate for your RSS feed.
+
+Now you need to create a `route.ts` file inside of your folder. 
+
+Here is what your `route.ts` file should look like to start:
+
+```ts
+import RSS from "rss"
+
+export async function GET() {
+
+    return new Response('', {
+        headers: {
+            'Content-Type': 'application/xml; charset=utf-8',
+        },
+    });
+}
+```
+### Create an RSS Instance 
+
+Next, you need to create a new RSS instance and provide it with details about your RSS feed. You can find field descriptions on the [npm page for rss](https://www.npmjs.com/package/rss). I also cross-referenced the [RSS specification](https://www.rssboard.org/rss-specification) as I created mine.
+
+Here it is:
+
+```ts
+import RSS from "rss"
+
+export async function GET() {
+
+    const feed = new RSS({
+        title: 'Dave Gray Teaches Code',
+        description: "Dave Gray's Blog",
+        generator: 'RSS for Node and Next.js',
+        feed_url: 'https://www.davegray.codes/feed.xml',
+        site_url: 'https://www.davegray.codes/',
+        managingEditor: 'dave@davegray.codes (Dave Gray)',
+        webMaster: 'dave@davegray.codes (Dave Gray)',
+        copyright: `Copyright ${new Date().getFullYear().toString()}, Dave Gray`,
+        language: 'en-US',
+        pubDate: new Date().toUTCString(),
+        ttl: 60,
+    });
+
+    return new Response('', {
+        headers: {
+            'Content-Type': 'application/xml; charset=utf-8',
+        },
+    });
+}
+```
+**Note:** the ttl value should be an integer. An incorrect example value is given on the [npm page](https://www.npmjs.com/package/rss).
+
+### Add Feed Items 
+
+Finally, you will need to bring in your individual page data like I do with my `getPostsMeta` function. This will allow you to populate the individual items of the feed. In my example below, I map over my blog posts and create a new `feed.item` for each:
+
+```ts
+import RSS from "rss"
+import { getPostsMeta } from "@/lib/posts"
+
+export async function GET() {
+
+    const feed = new RSS({
+        title: 'Dave Gray Teaches Code',
+        description: "Dave Gray's Blog",
+        generator: 'RSS for Node and Next.js',
+        feed_url: 'https://www.davegray.codes/feed.xml',
+        site_url: 'https://www.davegray.codes/',
+        managingEditor: 'dave@davegray.codes (Dave Gray)',
+        webMaster: 'dave@davegray.codes (Dave Gray)',
+        copyright: `Copyright ${new Date().getFullYear().toString()}, Dave Gray`,
+        language: 'en-US',
+        pubDate: new Date().toUTCString(),
+        ttl: 60,
+    });
+
+    const allPosts = await getPostsMeta()
+
+    if (allPosts) {
+        allPosts.map((post) => {
+            feed.item({
+                title: post.title,
+                description: post.description,
+                url: `https://www.davegray.codes/posts/${post.id}`,
+                categories: post.tags || [],
+                author: "Dave Gray",
+                date: post.date,
+            });
+        });
+    }
+
+    return new Response(feed.xml({ indent: true }), {
+        headers: {
+            'Content-Type': 'application/xml; charset=utf-8',
+        },
+    });
+}
+```
+### Update the Response 
+
+Notice I updated the `Response` above to include `feed.xml({ indent: true })` instead of the open quotes from the earlier examples. The `xml` method returns the `feed` created above. The `indent` value provides what to use as a tab. You can [read more about the indent setting](https://www.npmjs.com/package/rss).
+
+### The Output
+
+It's important to note that the [Next.js docs](https://nextjs.org/docs/app/building-your-application/deploying/static-exports#route-handlers) state static route handlers "_will render a static response when running `next build`_". Therefore, when you deploy your site and the build process runs, your `feed.xml` file will be created. 
+
+_However, you can preview your `feed.xml` file in dev mode_.
+
+Type `npm run dev` in your terminal to launch your Next.js project. Then visit `localhost:3000/feed.xml` in your browser to see the final output. 
+
+You can also use the [W3C Feed Validation Service](https://validator.w3.org/feed/) to validate your feed format. 
+
+### Special Thanks
+
+I'd like to give a tip of the hat to **Colby Fayock** for writing an [excellent article](https://spacejelly.dev/posts/sitemaps-rss-feeds-with-next-js-app-router/) on creating an **RSS feed** earlier this year. I referenced his article along with the other resources linked above as I created [my own RSS feed](https://www.davegray.codes/feed.xml).

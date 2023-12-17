@@ -1,0 +1,102 @@
+---
+title: 'Does My Next.js Blog Need Canonical Links?'
+description: 'A quick look at why I might want to use canonical links on my Next.js blog.'
+date: '2023-11-14'
+modified: '2023-11-14'
+tags: ['nextjs','blog','webdev','seo']
+cover_image: true
+---
+
+While launching my blog, I've been reviewing some of the confusing metadata items that go inside the `<head>` element. 
+
+I built my blog with [Next.js](https://nextjs.org/) and previously discussed how Next.js [orders and merges metadata](https://www.davegray.codes/posts/nextjs-ordering-merging-metadata) and how Next.js [handles favicons](https://www.davegray.codes/posts/nextjs-favicon-svg-icon-apple-chrome).
+
+Today, I'm looking at **canonical links** and why I might need them on my blog. 
+
+## What is a Canonical Link? 
+
+Surprisingly, MDN [doesn't provide much info](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel) and only briefly mentions the canonical value for the **rel** attribute in a table of possible values. 
+
+Google's developer site [provides much more information](https://developers.google.com/search/docs/crawling-indexing/canonicalization) including a definition of _canonicalization_: 
+
+> Canonicalization is the process of selecting the representative –canonical– URL of a piece of content.
+
+The same Google site provides more info on how a canonical URL can be specified: 
+
+- Using a **redirect** provides a strong indication that the target of the redirect should be a canonical URL. 
+- `rel="canonical"` links indicate canonical URLs. 
+- **Sitemap links** are considered a weaker indication of a canonical URL as well. 
+
+All good to know, and the `rel="canonical"` link is specifically what I wanted to learn about. 
+
+## Why Should I Use a Canonical Link? 
+
+In [Using the Cross Domain Rel=Canonical to Maximize the SEO Value of Cross-Posted Content](https://moz.com/blog/cross-domain-rel-canonical-seo-value-cross-posted-content), Rand Fishkin essentially answers the question in the title. 
+
+I not only want to publish content to my blog, I want to _maximize the SEO value_ by cross-posting content to other sites like [DEV](https://dev.to/), [Hashnode](https://hashnode.com/), [Medium](https://medium.com/) and others. 
+
+By providing a canonical link in the `<head>` of my pages like the one below... 
+
+```html
+<link rel="canonical" href="https://www.davegray.codes/posts/nextjs-favicon-svg-icon-apple-chrome">
+```
+...I can publish the same article on those other sites. 
+
+And as [DEV](https://dev.to/faq) notes on their FAQ page: 
+
+> You can set the canonical_url of your post before publishing so that Google knows where to send the link juice (that precious, precious link juice).
+
+In fact, all three sites I mentioned above allow you to provide the canonical URL of the content you share. 
+
+## How to set a Canonical Link in Next.js
+
+In my root layout file, I added my base URL with the **metadataBase** key: 
+
+```ts 
+export const metadata: Metadata = {
+  title: {
+    template: '%s | Dave Gray',
+    default: "Dave Gray Teaches Code",
+  },
+  description: "Hello, I'm Dave. 👋 I teach coding and web development skills.",
+  applicationName: "Dave Gray's Blog",
+  authors: [{ name: "Dave Gray" }],
+  generator: 'Next.js',
+  keywords: ['dave gray', 'code', 'web development', 'javascript', 'react', 'node.js', 'next.js', 'web dev', 'html', 'css', 'python'],
+  referrer: 'origin-when-cross-origin',
+  creator: 'Dave Gray',
+  publisher: 'Dave Gray',
+  metadataBase: new URL('https://www.davegray.codes/'),
+}
+```
+Now when generating the pages for my blog posts, I need to add the canonical link. Note that is a property of **alternates** in Next.js metadata:
+```ts 
+export async function generateMetadata({ params: { postId } }: Props) {
+
+    const post = await getPostByName(`${postId}.mdx`) //deduped!
+
+    if (!post) {
+        return {
+            title: 'Post Not Found'
+        }
+    }
+
+    const { meta } = post
+
+    return {
+        title: meta.title,
+        description: meta.description,
+        keywords: [...meta.tags],
+        alternates: {
+            canonical: `/posts/${meta.id}`,
+        }
+    }
+}
+```
+Also worth noting: Next.js will take the trailing slash from your base URL and a leading slash from your canonical path and merge them so you get one / and not //.
+
+Now when I `npm run dev`, I can open devtools and see code like the following in the `<head>` of my blog post pages: 
+```html 
+<link rel="canonical" href="https://www.davegray.codes/posts/nextjs-favicon-svg-icon-apple-chrome">
+```
+

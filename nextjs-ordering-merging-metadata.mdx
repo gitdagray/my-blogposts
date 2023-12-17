@@ -1,0 +1,69 @@
+---
+title: 'Next.js: Ordering and Merging Metadata'
+description: 'Discovering how much Next.js Metadata I need to provide for individual pages of my blog.'
+date: '2023-11-12'
+modified: '2023-11-12'
+tags: ['nextjs','blog','webdev','seo']
+cover_image: true
+---
+
+While putting some finishing touches on my blog, I realized I had not spent much time thinking about **metadata**. Sure, I had the basic _title_,  _description_ and _keywords_ fields, but maybe I needed more. After reviewing [standard metadata names](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta/name), I decided to add the _applicationName_, _authors_, _generator_, _referrer_, _creator_ and _publisher_ fields as well. 
+
+My root **layout** file for the blog contains _static_ metadata like this:
+
+```ts
+export const metadata: Metadata = {
+  title: {
+    template: '%s | Dave Gray',
+    default: "Dave Gray Teaches Code",
+  },
+  description: "Hello, I'm Dave. 👋 I teach coding and web development skills.",
+  applicationName: "Dave Gray's Blog",
+  authors: [{ name: "Dave Gray" }],
+  generator: 'Next.js',
+  keywords: ['dave gray', 'code', 'web development', 'javascript', 'react', 'node.js', 'next.js', 'web dev', 'html', 'css', 'python'],
+  referrer: 'origin-when-cross-origin',
+  creator: 'Dave Gray',
+  publisher: 'Dave Gray',
+}
+```
+
+And my _dynamic_ post pages generate specific metadata from the [MDX](https://mdxjs.com/) files they receive like this:
+
+```ts 
+export async function generateMetadata({ params: { postId } }: Props) {
+
+    const post = await getPostByName(`${postId}.mdx`)
+
+    if (!post) {
+        return {
+            title: 'Post Not Found'
+        }
+    }
+
+    const { meta } = post
+
+    return {
+        title: meta.title,
+        description: meta.description,
+        keywords: [...meta.tags],
+    }
+}
+```
+_At this point, I began to wonder if I needed to add the other metadata fields to my dynamically generated post pages..._
+
+I referenced the Next.js docs and was glad to see Next.js supports [Metadata Ordering](https://nextjs.org/docs/app/building-your-application/optimizing/metadata#ordering) and [Metadata Merging](https://nextjs.org/docs/app/building-your-application/optimizing/metadata#merging). 
+
+Next.js follows an _evaluation order_ for metadata beginning with the root layout, followed by nested layouts and finally, evaluating any specific page file. 
+
+Following the evaluation order, exported Metadata objects are then shallowly merged together. This means the static Metadata fields I provided in my root layout do not need to be duplicated in my blog post page files. The Metadata is merged and still represented in each generated page. Any field I provide in the page file will overwrite the same field from the parent layout file or files, too. 
+
+_Nice!_
+
+With the basic Metadata conquered, I then realized I need to dive-in and learn about [more Metadata](https://nextjs.org/docs/app/api-reference/functions/generate-metadata) I can provide including (but not limited to):
+
+- openGraph
+- icons
+- alternates
+
+As I learn more about these other Metadata types and add them to my blog site, I'll be sure to share what I learn about them here, too. 

@@ -1,0 +1,162 @@
+---
+title: 'Light & Dark Mode in Next.js App Router + Tailwind with No Flicker'
+description: 'You can toggle light and dark mode themes in Next.js + TailwindCSS while avoiding a page flicker.'
+date: '2023-12-04'
+modified: '2023-12-15'
+tags: ['webdev','react','nextjs','tailwindcss','blog']
+cover_image: true
+---
+
+Applying light and [dark mode](https://tailwindcss.com/docs/dark-mode) themes with TailwindCSS is easy. However, if you want to allow users to toggle between light and dark mode themes while also identifying the system preference setting at load time and avoiding a page flicker, things get a little more complicated.
+
+## Why This Is Challenging 
+
+Next.js [generates static pages](https://nextjs.org/docs/app/building-your-application/upgrading/app-router-migration#static-site-generation-getstaticprops) on the server before sending them to the browser (aka "the client"). This helps keep things fast and websites seem snappy, but the server cannot read what user preferences will be. The server has no idea in advance that John prefers light-mode in his browser and Jane prefers dark-mode in her browser. 
+
+The best you can do is apply the [TailwindCSS dark mode](https://tailwindcss.com/docs/dark-mode) variant in advance that will read the [prefers-color-scheme](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-color-scheme) user system setting and apply the dark mode theme if that is preferred.
+
+When you want to allow a user to manually toggle the light-dark mode theme setting, you need to read the system preference first. If they do toggle the setting, you want to save the new setting in [`localStorage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage). However, `localStorage` is only available in the browser. Your server components won't be able to read this setting, and this situation can cause a theme _flash_ when your site loads due to an incorrect theme being applied for a split second. 
+
+Fortunately, the [next-themes](https://github.com/pacocoursey/next-themes) package can help avoid this issue while allowing users the ability to toggle between light and dark mode in your Next.js website.
+
+Here's how I applied `next-themes` with TailwindCSS to my blog:
+
+## 1. Edit your TailwindCSS config file
+
+You need to make one addition to your `tailwind.config.ts` file if you want to [toggle dark mode manually](https://tailwindcss.com/docs/dark-mode#toggling-dark-mode-manually). You must add a `darkMode` setting with a `class` value. 
+
+```ts 
+// tailwind.config.ts 
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  darkMode: 'class',
+  // ...
+}
+```
+
+## 2. next-themes 
+
+Now you are ready to add `next-themes` to your project by typing the following in your terminal:
+```bash
+npm i next-themes
+```
+
+The [next-themes](https://github.com/pacocoursey/next-themes) GitHub repository provides directions for use with the Next.js App Router. The directions do not include TypeScript, but I'm adding some TypeScript below. 
+
+First, create a `providers.tsx` file inside your `app` folder like this:
+```tsx 
+// app/providers.tsx
+'use client'
+
+import { ThemeProvider } from 'next-themes'
+
+export function Providers({ children }: { children: React.ReactNode }) {
+    return <ThemeProvider attribute="class" defaultTheme='system' enableSystem>{children}</ThemeProvider>
+}
+```
+
+Next, add the `<Providers>` component to your root `layout.tsx` by placing it _inside_ the `<body>` tag: 
+```tsx 
+// app/layout.tsx
+import { Providers } from './providers'
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body>
+        <Providers>
+            {children}
+        </Providers>
+      </body>
+    </html>
+  )
+}
+```
+
+## 3. suppressHydrationWarning
+
+Notice the [suppressHydrationWarning](https://legacy.reactjs.org/docs/dom-elements.html#suppresshydrationwarning) setting inside the `<html>` tag. As noted in the GitHub repo for [next-themes](https://github.com/pacocoursey/next-themes), if you do not apply this setting, you will get warnings because the `<html>` element _is being updated_ by next-themes. 
+
+The React docs discuss [suppressHydrationWarning](https://legacy.reactjs.org/docs/dom-elements.html#suppresshydrationwarning). The use of it by `next-themes` is exactly as intended. You are telling Next.js you want to override what the server may have sent because it _does not match_ the user setting saved in `localStorage`. 
+
+## 4. useTheme 
+
+Your implementation of `next-themes` is not complete until you create a component allowing users to manually change the themes. I called my component `ThemeSwitch.tsx`. 
+
+Here it is:
+
+```tsx 
+// app/components/ThemeSwitch.tsx
+'use client'
+
+import { FiSun, FiMoon } from "react-icons/fi"
+import { useState, useEffect } from 'react'
+import { useTheme } from 'next-themes'
+import Image from "next/image"
+
+export default function ThemeSwitch() {
+  const [mounted, setMounted] = useState(false)
+  const { setTheme, resolvedTheme } = useTheme()
+
+  useEffect(() =>  setMounted(true), [])
+
+  if (!mounted) return (
+    <Image
+      src="data:image/svg+xml;base64,PHN2ZyBzdHJva2U9IiNGRkZGRkYiIGZpbGw9IiNGRkZGRkYiIHN0cm9rZS13aWR0aD0iMCIgdmlld0JveD0iMCAwIDI0IDI0IiBoZWlnaHQ9IjIwMHB4IiB3aWR0aD0iMjAwcHgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwIiBoZWlnaHQ9IjIwIiB4PSIyIiB5PSIyIiBmaWxsPSJub25lIiBzdHJva2Utd2lkdGg9IjIiIHJ4PSIyIj48L3JlY3Q+PC9zdmc+Cg=="
+      width={36}
+      height={36}
+      sizes="36x36"
+      alt="Loading Light/Dark Toggle"
+      priority={false}
+      title="Loading Light/Dark Toggle"
+    />
+  )
+
+  if (resolvedTheme === 'dark') {
+    return <FiSun onClick={() => setTheme('light')} />
+  }
+
+  if (resolvedTheme === 'light') {
+    return <FiMoon onClick={() => setTheme('dark')} />
+  }
+
+}
+```
+
+There's a lot going on above, but I'll guide you through. 
+
+The goal is to allow users to click an icon to change the theme. If they click the sun icon provided with dark mode, they will switch to light mode, and if they click the moon icon provided with light mode, they will switch to dark mode. 
+
+I start by importing the icons I want to use. Then I bring in both `useState` and `useEffect` followed by `useTheme` from `next-themes` and the `<Image>` component from Next.js. 
+
+You must keep track of the mounted state because you cannot use the `setTheme` function from the `useTheme` hook unless you know your code is running in the browser. Without this check, you will get a hydration mismatch warning when initially rendering the component on the server. Components rendering on the server will not use hooks and cannot access client-side `localStorage`. 
+
+You need to set the mount state inside of the `useEffect` hook that only runs on component mount in the client when it has an empty dependency array. This insures it will only run in the browser.
+
+If the component is _not mounted_, it renders a placeholder image to avoid [cumulative layout shift](https://web.dev/articles/cls). 
+
+If the component _is mounted_, it checks the `resolvedTheme` value from the `useTheme` hook and provides the correct icon. 
+
+Note: I did not have to add code for saving the theme choice in `localStorage`. `next-themes` handles that for you.
+
+## 5. End Result 
+
+You should now have a Next.js website that not only applies the user system preference, but also remembers any user changes to the light and dark mode theme preference specifically for your site. Therefore, a user may have a system preference of light mode, but can still choose a default dark mode for your website.  
+
+This should _not_ result in a page [flash](https://github.com/pacocoursey/next-themes#the-flash), but the `next-themes` docs do say your website _may still flash in dev mode_. Even if so, in production mode, there should be no flash. 
+
+I have implemented `next-themes` with TailwindCSS on [my blog](https://www.davegray.codes/) as of this writing. Please check it out if you want to see a deployed example. 
+
+## Video Tutorial
+
+<Video id="7zqI4qMDdg8" />
+
+I created a video tutorial based on this article, too. 
+
+Check it out! 
+
+
