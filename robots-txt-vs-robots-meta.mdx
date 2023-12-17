@@ -1,0 +1,116 @@
+---
+title: 'Robots.txt is NOT Robots meta'
+description: 'Providing a robots.txt file is not the same as providing robots meta tags for your website.'
+date: '2023-12-16'
+modified: '2023-12-16'
+tags: ['seo','webdev','nextjs','blog']
+cover_image: true
+---
+
+_Providing a robots.txt file is not the same as providing robots meta tags for your website._
+
+## Robots? On My Website? 
+
+To be fair, they probably should have named robots [crawlers](https://developer.mozilla.org/en-US/docs/Glossary/Crawler). As in "web crawler". The name _crawler_ refers to what is also called a bot or robot and is a program. Search engines send these robots out to crawl the web and build their search indexes.
+
+## Robots.txt vs Robots Meta Tags: What's the Difference?
+
+Both provide instructions to the bots visiting your website. The level of instruction is the difference.
+
+A robots.txt file applies to your entire website. 
+
+Robots meta tags apply specifically to the pages they are in.
+
+Let's look at both in a little more detail...
+
+## Robots.txt 
+
+A `robots.txt` file is placed in the root directory of your website. It follows the [Robots Exclusion Protocol](https://www.rfc-editor.org/rfc/rfc9309.html). A robots.txt file tells robots what they are allowed or not allowed to index. The file is usually very simple. It contains directives for the User-agent (aka "robot"). It also states what files are allowed or disallowed from indexing. A few other optional directives exist like Sitemap, Host, and Crawl-delay.
+
+The [`robots.txt` for my blog](https://www.davegray.codes/robots.txt) looks like this:
+
+```txt 
+User-Agent: *
+Allow: /
+
+Sitemap: https://www.davegray.codes/sitemap.xml
+```
+The wildcard `*` character value for User-Agent stands for all robots. Putting a slash `/` for the Allow value tells robots they are allowed to visit all files on your website.
+
+You can learn more [about robots.txt](https://www.robotstxt.org/robotstxt.html) at [robotstxt.org](https://www.robotstxt.org/). For Next.js, you can learn [how to build sitemap and robots.txt files](https://www.davegray.codes/posts/nextjs-how-to-build-sitemap-robots-txt) from one of my previous articles. 
+
+## Robots Meta Tags 
+
+Robots meta tags go inside of the `<head>` element in your web  pages. The directions they provide only apply to the page they are within. You can also provide more detailed instructions for bots in your robots meta tags. 
+
+MDN provides a detailed table for [robots metadata](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta/name#other_metadata_names). It lists the possible values you can use in your robots meta tags. My content pages use the `index, follow` values. In contrast, my tag results pages use the `noindex, follow` values. 
+
+It is also worth noting that you can provide a robots meta tag specific to Google called `googlebot`. This provides directives specifically for the bot Google crawls websites with. 
+
+Here's how I set up my robots metadata in Next.js: 
+
+```tsx 
+// app/layout.tsx
+import type { Metadata } from 'next'
+
+// rest of my layout.tsx file here...
+
+export const metadata: Metadata = {
+    // rest of my metadata object here... 
+    robots: {
+        index: true,
+        follow: true,
+        googleBot: {
+            index: true,
+            follow: true,
+            'max-video-preview': -1,
+            'max-image-preview': 'large',
+            'max-snippet': -1,
+        }
+    },
+}
+```
+Notice the nested `googleBot` object that Next.js supports. The googlebot accepts some extra values. You can read about these values in their [valid indexing and serving rules](https://developers.google.com/search/docs/crawling-indexing/robots-meta-tag) list for robots meta tags. 
+
+I'm providing `max-snippet: -1`. This means there is no limit on the number of characters Google can show in their snippet. `max-image-preview: large` indicates Google may provide a larger image preview of my page. There is also the `max-video-preview: -1` setting. It says there is no maximum limit to the number of seconds to use as a video snippet for videos on this page. 
+
+Here's the output inside the `<head>` element of my pages: 
+
+```html 
+<meta name="robots" content="index, follow">
+<meta name="googlebot" content="index, follow, max-video-preview:-1, max-image-preview:large, max-snippet:-1">
+```
+Next.js [orders and merges metadata](https://www.davegray.codes/posts/nextjs-ordering-merging-metadata). Thus, you only need to add this data to your root `layout.tsx` file. That is unless you want to provide different directives elsewhere. For example, I do provide different directives for my tag results pages, and here is the code: 
+
+```tsx 
+// app/tags/[tag]/page.tsx
+
+// rest of my page.tsx file here...
+
+export function generateMetadata({ params: { tag } }: Props) {
+    return {
+        // rest of my metadata object here...
+        robots: {
+            index: false,
+            follow: true,
+            googleBot: {
+                index: false,
+                follow: true,
+            }
+        },
+    }
+}
+```
+You could say I'm being redundant. I am providing the same directives to the standard robots meta tag and to the googlebot tag. That said, I want to keep my metadata consistent and since I use this pattern on my other pages, I'm using it here, too. 
+
+Here is the resulting output inside the `<head>` element of any given tag results page:
+
+```html 
+<meta name="robots" content="noindex, follow">
+<meta name="googlebot" content="noindex, follow">
+```
+## Final Considerations
+
+Like the [Pirates Code](https://youtu.be/k9ojK9Q_ARE?si=AOl396L5YrKgVRSW&t=41), robots directives are more like guidelines than actual rules. [Bad robots](https://www.robotstxt.org/faq/blockjustbad.html) can ignore these guidelines. Thus, you should not depend on robots directives. There is no guarantee they will keep your pages from public access or from search indexes.
+
+Check the docs for more examples of [robots metadata in Next.js](https://nextjs.org/docs/app/api-reference/functions/generate-metadata#robots). 

@@ -1,0 +1,221 @@
+---
+title: 'Next.js: How to Create Open Graph Social Media Cards'
+description: "Make your Next.js blog posts stand out with Open Graph Social Media Cards."
+date: '2023-11-22'
+modified: '2023-11-22'
+tags: ['nextjs','blog','seo','webdev']
+cover_image: true
+---
+
+When you or your subscribers share your blog posts on social media, you can make them stand out with **Open Graph Social Media Cards**. In this article, I'll discuss what Open Graph is, why you should have it in your page metadata, and a few different ways to add **Social Media Cards** to your Next.js blog. 
+
+## What is Open Graph? 
+
+[Open Graph protocol](https://fbdevwiki.com/wiki/Open_Graph_protocol) was created by Facebook as a standardized way 
+to provide metadata for a webpage. Colby Fayock provided a nice explainer article called "_[What is Open Graph and how can I use it for my website?](https://www.freecodecamp.org/news/what-is-open-graph-and-how-can-i-use-it-for-my-website/)_ " that was published by freeCodeCamp. I highly recommend it. 
+
+## Why Should I Put Open Graph in My Blog Metadata?
+
+Simply put, you want your blog posts to stand out when they are shared on social media. 
+
+If you don't provide Open Graph metadata in your blog, a post might look like this when you share it:
+
+        <CustomImage src="https://raw.githubusercontent.com/gitdagray/my-blogposts/main/images/tweet-without-open-graph.jpg" alt="Tweet without Open Graph metadata" width={400} height={269} />
+
+But if you do provide Open Graph metadata, a shared post might look like this instead: 
+
+        <CustomImage src="https://raw.githubusercontent.com/gitdagray/my-blogposts/main/images/tweet-with-open-graph.jpg" alt="Tweet with Open Graph metadata" width={400} height={545} />
+
+## How to Add Open Graph Social Media Cards to Your Blog 
+
+There are several ways to add the Open Graph metadata to your pages in Next.js. By adding the Open Graph metadata, your pages will provide social media cards when they are shared. 
+
+### 1. Static Data 
+
+You can always provide the [openGraph object](https://nextjs.org/docs/app/api-reference/functions/generate-metadata#opengraph) with the rest of your `metadata` by simply typing it all out by hand for each page. 
+
+This is what I did for my homepage in the root `layout.tsx` file:
+
+```ts
+openGraph: {
+    title: "Dave Gray",
+    description: "Hello, I'm Dave. 👋 I teach coding and web development skills.",
+    url: 'https://www.davegray.codes/',
+    siteName: "Dave Gray's Blog",
+    type: 'website',
+    images: [
+      {
+        url: 'https://raw.githubusercontent.com/gitdagray/my-blogposts/main/images/og-card.png',
+        secureUrl: 'https://raw.githubusercontent.com/gitdagray/my-blogposts/main/images/og-card.png',
+        width: 1200,
+        height: 630,
+        alt: 'Preview image for Dave Gray',
+      }
+    ]
+  },
+```
+I should share a few things about the above code with you: 
+
+- It is only the `openGraph` part of my larger [metadata object](https://nextjs.org/docs/app/api-reference/functions/generate-metadata#the-metadata-object). 
+- I'm hosting the image for my homepage in my GitHub repository with my MDX files, but you could host yours anywhere you want. 
+- The typical image size for Open Graph images is `1200x630`, but you can look at the [specific image sizes for several platforms](https://simplified.com/blog/design/open-graph-image-everything-you-need-to-know/). I've tried out `1200x630` on Twitter, Facebook, and LinkedIn with success. 
+- You can read the Open Graph specifications for [valid `type` values](https://ogp.me/#types).
+
+And the output metadata inside the `<head>` of my homepage for the `openGraph object` looks like this: 
+
+```html 
+<meta property="og:title" content="Dave Gray">
+<meta property="og:description" content="Hello, I'm Dave. 👋 I teach coding and web development skills.">
+<meta property="og:url" content="https://www.davegray.codes/">
+<meta property="og:site_name" content="Dave Gray's Blog">
+<meta property="og:image" content="https://raw.githubusercontent.com/gitdagray/my-blogposts/main/images/og-card.png">
+<meta property="og:image:secure_url" content="https://raw.githubusercontent.com/gitdagray/my-blogposts/main/images/og-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Preview image for Dave Gray">
+<meta property="og:type" content="website">
+```
+The only required properties above are `og:title`, `og:url`, `og:image`, and `og:type`. Reference the [Open Graph specification](https://ogp.me/) to decide what other properties you want to include.
+
+#### Twitter / X Metadata 
+
+In addition to the `openGraph` object detailed above, Twitter (now called X) has its own specification and [Next.js twitter metadata object](https://nextjs.org/docs/app/api-reference/functions/generate-metadata#twitter). As of this writing (November, 2023), the Twitter Developer docs are not completely up-to-date and their Twitter Card [validator tool](https://cards-dev.twitter.com/validator) does not work. That said, I don't think they have changed much of anything about their Twitter Cards. You can read an [Overview of Twitter Cards](https://developer.twitter.com/en/docs/twitter-for-websites/cards/overview/abouts-cards) and still gain useful knowledge. 
+
+Below is the [twitter metadata object](https://nextjs.org/docs/app/api-reference/functions/generate-metadata#twitter) I created in my root `layout.tsx` file:
+
+```ts 
+twitter: {
+    card: 'summary_large_image',
+    site: '@yesdavidgray',
+    title: "Dave Gray",
+    description: "Hello, I'm Dave. 👋 I teach coding and web development skills.",
+    creator: '@yesdavidgray',
+    images: {
+      url: 'https://raw.githubusercontent.com/gitdagray/my-blogposts/main/images/og-card.png',
+      alt: 'Preview image for Dave Gray',
+    }
+  },
+```
+A few notes about the above code: 
+
+- It is only the `twitter` part of my larger [metadata object](https://nextjs.org/docs/app/api-reference/functions/generate-metadata#the-metadata-object). 
+- The title and description properties are identical to the `openGraph` properties. 
+- The images object does not support width and height. 
+- I chose to use the [`summary_large_image` Twitter Card](https://developer.twitter.com/en/docs/twitter-for-websites/cards/overview/summary-card-with-large-image). 
+- The [Next.js example](https://nextjs.org/docs/app/api-reference/functions/generate-metadata#twitter) currently (November, 2023) shows `siteId` and `creatorId` properties. They are not required or provided in the [Twitter Card examples](https://developer.twitter.com/en/docs/twitter-for-websites/cards/overview/abouts-cards). 
+- Both the `site` and `creator` properties should have your Twitter handle as the value. 
+- Max characters: title: 70, description: 200, images.alt: 420.
+- Images must be less than 5mb in size.
+- **Noteworthy:** [Daily.dev](https://daily.dev/) [uses the `creator` property](https://docs.daily.dev/docs/for-content-creators/claiming-ownership-on-article) to give you credit for your article if it is featured on their site.
+
+And the output metadata inside the `<head>` of my homepage for the `twitter object` looks like this: 
+
+```html 
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@yesdavidgray">
+<meta name="twitter:creator" content="@yesdavidgray">
+<meta name="twitter:title" content="Dave Gray">
+<meta name="twitter:description" content="Hello, I'm Dave. 👋 I teach coding and web development skills.">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/gitdagray/my-blogposts/main/images/og-card.png">
+<meta name="twitter:image:alt" content="Preview image for Dave Gray">
+```
+To examine how Twitter, LinkedIn, and Facebook use the metadata above, you can share [my homepage](https://www.davegray.codes/) and see the social media cards those platforms create when you post my webpage link.
+
+### 2. Dynamic Data 
+
+The static approach isn't too efficient for blog article pages. They should provide page specific data, and just like your dynamically generated Next.js blog pages, you can create this metadata dynamically. 
+
+I previously discussed generating metadata for dynamic pages in a blog post about [ordering and merging metadata in Next.js](https://www.davegray.codes/posts/nextjs-ordering-merging-metadata). The examples I show you below will be part of a larger metadata object that is returned by the [`generateMetadata` function](https://nextjs.org/docs/app/api-reference/functions/generate-metadata#generatemetadata-function).
+
+Since we have now discussed both the `openGraph` and `twitter` metadata objects that Next.js uses, I'm going to provide you with one larger example that includes both: 
+
+```ts 
+openGraph: {
+    title: meta.title,
+    description: meta.description,
+    url: `/posts/${meta.id}`,
+    type: 'article',
+    siteName: "Dave Gray's Blog",
+    publishedTime: new Date(meta.date).toISOString(),
+    modifiedTime: new Date(meta.modified).toISOString(),
+    authors: ['Dave Gray'],
+    images: [
+        {
+            url: `https://raw.githubusercontent.com/gitdagray/my-blogposts/main/images/${meta.id}.png`,
+            secureUrl: `https://raw.githubusercontent.com/gitdagray/my-blogposts/main/images/${meta.id}.png`,
+            width: 1200,
+            height: 630,
+            alt: `Preview image for ${meta.title}`,
+        }
+    ],
+},
+twitter: {
+    card: 'summary_large_image',
+    site: '@yesdavidgray',
+    title: meta.title, 
+    description: meta.description, 
+    creator: '@yesdavidgray',
+    images: { 
+        url: `https://raw.githubusercontent.com/gitdagray/my-blogposts/main/images/${meta.id}.png`,
+        alt: `Preview image for ${meta.title}`, 
+    },
+},
+```
+Here's a few notes about the above code: 
+
+- `meta` is the object I have dynamically requested that contains `front matter` about my specific blog post. 
+- The Open Graph `type` value `article` has the associated fields `publishedTime`, `modifiedTime`, and `authors`. Research the [Open Graph type values](https://ogp.me/#types).
+- I am hosting my blog post images in the same GitHub repository as my MDX blog post files. I give each image the same filename (except the file extension) as the blog post MDX file. This becomes the `meta.id` as I fetch blog data. Some call this the `slug`. 
+- If you don't want to provide a different image for each blog post, you don't have to. [Flavio](https://flaviocopes.com/) has a very successful blog, and he uses the same image as his homepage in the Open Graph and Twitter metadata for every article he posts.
+
+Here's the output metadata inside the `<head>` of one of my blog posts from both objects above: 
+
+```html 
+<meta property="og:title" content="Next.js: Ordering and Merging Metadata">
+<meta property="og:description" content="Discovering how much Next.js Metadata I need to provide for individual pages of my blog.">
+<meta property="og:url" content="https://www.davegray.codes/posts/nextjs-ordering-merging-metadata">
+<meta property="og:site_name" content="Dave Gray's Blog">
+<meta property="og:image" content="https://raw.githubusercontent.com/gitdagray/my-blogposts/main/images/nextjs-ordering-merging-metadata.png">
+<meta property="og:image:secure_url" content="https://raw.githubusercontent.com/gitdagray/my-blogposts/main/images/nextjs-ordering-merging-metadata.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Preview image for Next.js: Ordering and Merging Metadata">
+<meta content="article" property="og:type">
+<meta content="2023-11-12T00:00:00.000Z" property="article:published_time">
+<meta content="2023-11-12T00:00:00.000Z" property="article:modified_time">
+<meta content="Dave Gray" property="article:author">
+
+<!-- Begin Twitter Metadata -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@yesdavidgray">
+<meta name="twitter:creator" content="@yesdavidgray">
+<meta name="twitter:title" content="Next.js: Ordering and Merging Metadata">
+<meta name="twitter:description" content="Discovering how much Next.js Metadata I need to provide for individual pages of my blog.">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/gitdagray/my-blogposts/main/images/nextjs-ordering-merging-metadata.png">
+<meta name="twitter:image:alt" content="Preview image for Next.js: Ordering and Merging Metadata">
+```
+Note that none of the meta tags above are guaranteed to be next to each other inside the `<head>` element, but they are in there. 
+
+### opengraph-image &amp; twitter-image 
+
+Much like a [favicon](https://www.davegray.codes/posts/nextjs-favicon-svg-icon-apple-chrome), Next.js gives you the option of simply providing some specifically named files - `opengraph-image` and `twitter-image` with supported image file extensions. I did not do this because I wanted different images for each blog post. This approach lets you assign one `opengraph-image` and one `twitter-image` file to any route segment. You can [read more about using image files](https://nextjs.org/docs/app/api-reference/file-conventions/metadata/opengraph-image).
+
+If you do choose this approach, be sure to create the necessary `opengraph-image.alt.txt` and `twitter-image.alt.txt` files. 
+
+### Dynamically Generate Images 
+
+An interesting feature of Next.js is the ability to [generate dynamic Open Graph and Twitter images](https://nextjs.org/docs/app/api-reference/file-conventions/metadata/opengraph-image#generate-images-using-code-js-ts-tsx).
+
+You can style the created images with CSS just like you would the rest of your app. This approach uses the `edge` runtime to speed things up, too. 
+
+_Why didn't I choose to use this feature_? 
+
+In the end, it seems like a quick way to generate generic images with a color background and text overlay. You could spend more time with it to pull in unique cover images, too, but I already easily pull in images from my GitHub repo. Most social media sites will already pull in your article title text from your Open Graph metadata and compile a card with it and your Open Graph image. 
+
+I may spend some more time with Next.js image generation in the future. The [ImageResponse API](https://nextjs.org/docs/app/api-reference/functions/image-response) looks fun, and I think I could use it to generate a dynamic social card for my homepage.
+
+If the image generation approach has peaked your curiosity, don't wait for me - _go for it!_
+
+In the meantime, you can share any of my [blog posts](https://www.davegray.codes/) to see how the different social media platforms create social media cards from my Open Graph and Twitter metadata. 
+
+

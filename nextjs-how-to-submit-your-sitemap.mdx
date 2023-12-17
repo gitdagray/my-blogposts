@@ -1,0 +1,62 @@
+---
+title: 'Next.js: How to Submit Your Sitemap to Google'
+description: 'After creating a sitemap for your Next.js website, you need to submit your sitemap to Google.'
+date: '2023-11-26'
+modified: '2023-11-26'
+tags: ['nextjs','blog','webdev','seo']
+cover_image: true
+---
+
+I previously discussed [how to build a sitemap in Next.js](https://www.davegray.codes/posts/nextjs-how-to-build-sitemap-robots-txt), but I didn't discuss the crucial next step: _How to submit your sitemap to Google_. 
+
+Let me guide your through this process step-by-step:
+
+## 1. Pick How You Want to Submit Your Sitemap 
+
+Google provides a list of different ways you can [submit your sitemap to their crawler for indexing](https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap#addsitemap). 
+- In the Search Console 
+- Programmatically using their Search Console API 
+- Listing your sitemap in your robots.txt file 
+- Broadcasting with [WebSub](https://www.w3.org/TR/websub/) in Atom or RSS 
+
+I chose to use two of the above methods. [When I created my robots.txt file](https://www.davegray.codes/posts/nextjs-how-to-build-sitemap-robots-txt), I did list the sitemap in the file. With this approach, we just wait until Google discovers our site and reads the robots.txt file. No doubt this works, but I wanted to be a little more proactive, too. 
+
+I wanted to see what the [Google Search Console](https://search.google.com/search-console/about) had to offer, so I signed up with my Google account. At this point, I received a message stating I needed to [verify site ownership](https://support.google.com/webmasters/answer/9008080). 
+
+## 2. Verifying Site Ownership 
+
+Google allows you to [choose a verification method](https://support.google.com/webmasters/answer/9008080) to confirm site ownership. Several options are provided. Choosing one may depend on your hosting situation or the tech you are using with your blog. 
+
+- HTML file upload 
+- HTML tag 
+- Google Analytics tracking code 
+- Google Tag Manager 
+- Google Sites, Blogger, or Domains account 
+- Domain name provider 
+
+For my Next.js blog, I chose the [HTML tag site verification](https://support.google.com/webmasters/answer/9008080?sjid=5341002539176209972-NC#meta_tag_verification) option. This requires adding an additional [metadata](https://www.davegray.codes/posts/nextjs-ordering-merging-metadata) tag in the `<head>` section of your site's non-logged in home page. 
+
+To provide for verification metadata, Next.js supports a [verification object](https://nextjs.org/docs/app/api-reference/functions/generate-metadata#verification) in the metadata type it creates your project's metadata tags from. My discussion of [creating a metadata object](https://www.davegray.codes/posts/nextjs-ordering-merging-metadata) for my Next.js blog might help you understand the overall approach.
+
+I put the following code in the root `layout.tsx` file of my project as part of the larger [metadata object](https://nextjs.org/docs/app/api-reference/functions/generate-metadata#the-metadata-object) Next.js creates. 
+
+```ts 
+verification: {
+    google: "YOUR-VERIFICATION-CODE-PROVIDED-BY-GOOGLE"
+  },
+```
+
+After adding the new verification metadata to your site and redeploying to the web, you can open DevTools to inspect your site. You should see a meta tag somewhere in the `<head>` element of your home page like this: 
+
+```html 
+<meta name="google-site-verification" content="YOUR-VERIFICATION-CODE-PROVIDED-BY-GOOGLE">
+```
+Now you can go back to the search console to tell Google to verify your site ownership. Google should be able to verify your site ownership very quickly. 
+
+## 3. Submit Your Sitemap 
+
+You have now verified the ownership of your site, and you can [submit your sitemap](https://search.google.com/search-console/sitemaps) in the Google Search Console.
+
+Now the wait begins for your site to be indexed. I know you may be anxious ( _just like I was_ ) to see results, but Google will usually take a few days before it crawls and indexes your site. 
+
+Go back to the Search Console in a couple of days to see if Google has visited your site. The Search Console has an Indexing section where it will tell you the last date your sitemap was read by Google, the status, number of discovered pages, and let you dive into reports for single pages, too. 
