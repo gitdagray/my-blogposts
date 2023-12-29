@@ -1,0 +1,52 @@
+---
+title: 'What is the Yandex Verification meta tag?'
+description: "If you look at the metadata in other websites, you may see a meta tag with the name yandex-verification. Here's what it means."
+date: '2023-12-27'
+modified: '2023-12-27'
+tags: ['seo','webdev','nextjs','blog']
+cover_image: false
+---
+
+_If you look at the metadata in other websites, you may see a meta tag with the name yandex-verification. Here's what it means._
+
+## What is Yandex? 
+
+According to Wikipedia, [Yandex](https://en.wikipedia.org/wiki/Yandex) is a Russia based company that owns [Yandex Search](https://yandex.com/). The meta tag _yandex-verification_ refers to Yandex Search.
+
+## What does yandex-verification do?
+
+`yandex-verification` is much like [google-site-verification](https://support.google.com/webmasters/answer/9008080). `yandex-verification`s confirms you are the webmaster of your website for [Yandex Search](https://yandex.com/).
+
+## How can I add yandex-verfication to my website?
+
+Yandex provides [webmaster tools](https://webmaster.yandex.com/welcome/). These tools help you add your site and receive your verification code. You then place the code in the yandex-verification meta tag for confirmation. 
+
+## How I Add yandex-verification in Next.js 
+
+To add the yandex-verification meta tag in Next.js, I add the following to the `metadata` object in my `layout.tsx` file: 
+
+```tsx 
+// app/layout.tsx
+import type { Metadata } from 'next'
+
+// rest of my layout.tsx file here...
+
+export const metadata: Metadata = {
+    // rest of my metadata object here... 
+    verification: {
+        google: "YOUR-VERIFICATION-CODE-PROVIDED-BY-GOOGLE",
+        yandex: "YOUR-VERIFICATION-CODE-PROVIDED-BY-YANDEX",
+    },
+}
+```
+Don't worry if you haven't added a `google-site-verification` code to your website. I show how in my [_How to Submit Your Sitemap_](https://www.davegray.codes/posts/nextjs-how-to-submit-your-sitemap) article. 
+
+## The Result 
+
+You should now have a `yandex-verification` meta tag inside the `<head>` section of your website. 
+
+Here's the meta tag from my website: 
+
+```html 
+<meta name="yandex-verification" content="YOUR-VERIFICATION-CODE-PROVIDED-BY-YANDEX">
+```
