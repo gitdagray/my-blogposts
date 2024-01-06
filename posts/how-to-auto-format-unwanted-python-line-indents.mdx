@@ -96,7 +96,7 @@ _Fortunately, my old Windows laptop had not been updated_.
 
 I checked my installed versions of VS Code and the Python extension for VS Code: 
 
-`VS Code version VSCode 1.70.2`
+`VS Code v1.70.2`
 
 `Python Extension v2022.16.1`
 
@@ -112,7 +112,7 @@ I wanted to confirm I could recreate this desired formatting behavior on another
 
 I got out my new Macbook. It has the latest version of Python installed. (_3.12.1 as of this writing_) 
 
-I downloaded [`VS Code version 1.70.2`](https://code.visualstudio.com/updates/v1_70) and installed it.
+I downloaded [`VS Code v1.70.2`](https://code.visualstudio.com/updates/v1_70) and installed it.
 
 That's not enough though. I needed the VS Code Python extension to identify improper formatting. 
 
@@ -139,11 +139,11 @@ I wouldn't go back to an old version of VS Code just for this feature. This woul
 
 Recent editions of VS Code give you red squiggly lines to identify this formatting mistake. You should be able to easily see them and correct them on your own. 
 
-And note, I said _formatting mistake_. 
+Note: I said _formatting mistake_. 
 
 If you read the full [GitHub discussion](https://github.com/microsoft/vscode-python/discussions/21201) I mentioned earlier, the maintainer says the line in question isn't being formatted because it isn't valid Python code.
 
-Instead of considering this to be a formatting issue, it seems VS Code is now handling this as simply invalid code - _an error_. Their opinion is this is something you should identify and fix instead of a formatter.
+Instead of considering this to be a formatting issue, it seems VS Code is now handling this as invalid code - _an error_. Their opinion is this is something you should identify and fix yourself instead of relying on a formatter.
 
 That said, we all now know **VS Code was once capable of auto-correcting unwanted line-indentations**. 
 
