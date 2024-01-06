@@ -78,7 +78,7 @@ I had updated VS Code on my main workstation. The auto-formatting I demonstrated
 
 _Fortunately, my old Windows laptop had not been updated_. 
 
-I checked my installation versions of VS Code and the Python extension for VS Code: 
+I checked my installed versions of VS Code and the Python extension for VS Code: 
 
 `VS Code version VSCode 1.70.2`
 
@@ -121,10 +121,8 @@ You still get red squiggly lines in VS Code for this formatting mistake. You sho
 
 And note, I said _formatting mistake_. 
 
-If you read the full [GitHub discussion](https://github.com/microsoft/vscode-python/discussions/21201) I mentioned earlier, the maintainer clarifies why VS Code is not auto-formatting that extra line space:
+If you read the full [GitHub discussion](https://github.com/microsoft/vscode-python/discussions/21201) I mentioned earlier, the maintainer says the line in question isn't being formatted because it isn't valid Python code. 
 
-> That's actually not a formatting error. That original code is valid Python, it just happens to have extra whitespace that isn't necessary and looks "ugly".
-
-That said, we all now know VS Code was once capable of auto-correcting unwanted line-indentations. 
+That said, we all now know **VS Code was once capable of auto-correcting unwanted line-indentations**. 
 
 It sure would be cool if it did again.
