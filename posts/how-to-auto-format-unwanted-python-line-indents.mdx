@@ -61,9 +61,9 @@ Some shared their VS Code `settings.json` preferences for Python because theirs 
 
 Some blamed using a virtual environment. 
 
-Others claimed `autopep8` was deprecated, and everyone should use `black` instead. (As of January 2024, [autopep8](https://marketplace.visualstudio.com/items?itemName=ms-python.autopep8) is still available for use.)
+Others claimed `autopep8` was deprecated, and everyone should use `black` instead. (As of January 2024, [autopep8](https://marketplace.visualstudio.com/items?itemName=ms-python.autopep8) is available for use and is not deprecated.)
 
-I believe any of the above solutions were just a VS Code update away from theirs not working as well. 
+I believe anyone sharing the above solutions were just a VS Code update away from theirs not working as well. 
 
 ## A Not Exactly Accurate Discussion  
 
@@ -71,7 +71,7 @@ I read the autopep8 logs of my current VS Code installation. There I noticed a w
 
 I Googled this phrase along with `VS Code` and found a [GitHub discussion](https://github.com/microsoft/vscode-python/discussions/21201) with a VS Code maintainer. 
 
-I know he was trying to help, but he suggested what I demonstrated in the video was NOT possible with VS Code as I had it setup: 
+I know he was trying to help, but he suggested what I demonstrated in the video above was NOT possible with VS Code as I had it setup: 
 
 > That's probably not being done by a formatter we support since that isn't valid Python code (you can't have an indent like that as it's not valid Python code). They may have some other extension installed, pressed something else to fix the indentation (e.g. ctrl+shift+tab to dedent the line), etc.
 
@@ -108,21 +108,21 @@ I created a new Python file in VS Code and quickly recreated the auto-formatting
 
 This told me my hunch was correct. The desired formatting behavior had been removed in a VS Code update.
 
-I wanted to confirm I could recreate this on another computer, too. 
+I wanted to confirm I could recreate this desired formatting behavior on another computer, too. 
 
 I got out my new Macbook. It has the latest version of Python installed. (_3.12.1 as of this writing_) 
 
-I had recently installed VS Code on it. Now I would need to download [`VS Code version 1.70.2`](https://code.visualstudio.com/updates/v1_70) and install it.
+I downloaded [`VS Code version 1.70.2`](https://code.visualstudio.com/updates/v1_70) and installed it.
 
-That's not enough though. I still needed the Python extension to provide any identification of improper formatting. 
+That's not enough though. I needed the VS Code Python extension to identify improper formatting. 
 
-I couldn't find a `VSIX` file for version `2022.16.1`, so I went with the closest version I could find to download: [`v2022.15.12731017`](https://www.vsixhub.com/go.php?post_id=101360&app_id=f1f59ae4-9318-4f3c-a9b5-81b2eaa5f8a5&s=4WVwftKw6Tl%2FA&link=https%3A%2F%2Ff2.vsixhub.com%2Ffile.php%3Fversion%3D2022.15.12731017%26ext_name%3Dpython)
+I couldn't find a `VSIX` file for version `2022.16.1` of the extension, so I went with the closest version I could find to download: [`v2022.15.12731017`](https://www.vsixhub.com/go.php?post_id=101360&app_id=f1f59ae4-9318-4f3c-a9b5-81b2eaa5f8a5&s=4WVwftKw6Tl%2FA&link=https%3A%2F%2Ff2.vsixhub.com%2Ffile.php%3Fversion%3D2022.15.12731017%26ext_name%3Dpython)
 
 To install a VS Code extension from a VSIX file, open the Command Palette (`Ctrl+Shift+P`) and use the `Install from VSIX...` command. 
 
 With these older versions now installed on my new Macbook, I once again recreated the auto-formatting scenario. 
 
-**It worked again!**
+**It worked, too!**
 
 <CustomImage src="https://raw.githubusercontent.com/gitdagray/my-blogposts/main/images/python-auto-format-indents.gif" alt="VS Code Python auto-formatting unwanted indentations" width={600} height={375} />
 
@@ -137,14 +137,14 @@ _Probably not_.
 
 I wouldn't go back to an old version of VS Code just for this feature. This would also cause you to miss any new updates. 
 
-Recent editions of VS Code give you red squiggly lines in VS Code for this formatting mistake. You should be able to easily see it and correct it on your own. 
+Recent editions of VS Code give you red squiggly lines to identify this formatting mistake. You should be able to easily see them and correct them on your own. 
 
 And note, I said _formatting mistake_. 
 
 If you read the full [GitHub discussion](https://github.com/microsoft/vscode-python/discussions/21201) I mentioned earlier, the maintainer says the line in question isn't being formatted because it isn't valid Python code.
 
-Instead of considering this a formatting error, it seems VS Code is now handling this as invalid code - an error - and something that you should fix instead of a formatter.
+Instead of considering this to be a formatting issue, it seems VS Code is now handling this as simply invalid code - _an error_. Their opinion is this is something you should identify and fix instead of a formatter.
 
 That said, we all now know **VS Code was once capable of auto-correcting unwanted line-indentations**. 
 
-It sure would be cool if VS Code did this again.
+It sure would be cool if a current version of VS Code did this again.
