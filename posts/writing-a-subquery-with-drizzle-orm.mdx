@@ -1,0 +1,73 @@
+---
+title: 'Writing a SQL Subquery with Drizzle ORM'
+description: 'How to write a SQL subquery with Drizzle ORM.'
+date: '2024-01-14'
+modified: '2024-01-14'
+tags: ['sql','drizzle','orm']
+cover_image: false
+---
+
+I need to write a SQL select query that joins a couple of tables. 
+
+Fairly common stuff so far. 
+
+However, I also need to join that query with the results of _another query_. 
+
+This is possible in SQL with a `subquery`. 
+
+I am using [Drizzle ORM](https://orm.drizzle.team/) to write type-safe queries instead of just raw SQL statements. 
+
+I create the main query BEFORE adding in the subquery: 
+```ts
+import { db } from "@/index"
+import { plant, genus } from "@/schema"
+import { eq, or, like } from "drizzle-orm"
+
+const plantData = await db.select({
+        ID: plant.plantVarietyInfoId,
+        Genus: genus.description,
+}).from(plant)
+        .leftJoin(genus, eq(plant.genusId, genus.id))
+        .where(or(
+            like(plant.plantVarietyInfoId, `%${searchTerm}%`),
+            like(genus.description, `%${searchTerm}%`),
+        ))
+        .orderBy(genus.description)
+```
+I need to add in a max ship week value from a Shipping Records table. This table has a many-to-many relationship with the Plant table. 
+
+Now, I create the ship week subquery _above the main query_: 
+```ts 
+import { db } from "@/index"
+import { plant, genus } from "@/schema"
+import { eq, or, like, max } from "drizzle-orm"
+
+const shipWeekQuery = db.select({
+        ShipWeek: max(shippingRecord.expectedShipWeek).as('shipWeek'),
+        ID: shippingRecord.plantVarietyInfoId,
+    }).from(shippingRecord)
+        .groupBy(shippingRecord.plantVarietyInfoId)
+        .as('shipWeekRecords')
+```
+
+I need to use `as()` for aliases in the above subquery twice. Once on the max ship week value, and once on the overall subquery. Without these, the subquery will not work. 
+
+The strange part is that neither alias is referred to in the main query. Instead, I need to refer to the `shipWeekQuery` throughout.
+
+Next, I can add the subquery to the main query with a left join: 
+```ts 
+const plantData = await db.select({
+        ID: plant.plantVarietyInfoId,
+        Genus: genus.description,
+        ShipWeek: shipWeekQuery.ShipWeek,
+}).from(plant)
+        .leftJoin(genus, eq(plant.genusId, genus.id))
+        .leftJoin(shipWeekQuery, eq(plant.plantVarietyInfoId, shipWeekQuery.ID))
+        .where(or(
+            like(plant.plantVarietyInfoId, `%${searchTerm}%`),
+            like(genus.description, `%${searchTerm}%`),
+        ))
+        .orderBy(genus.description)
+```
+
+You can read more about creating a [select from subquery](https://orm.drizzle.team/docs/select#select-from-subquery) in the Drizzle ORM docs.
