@@ -34,9 +34,9 @@ const plantData = await db.select({
         ))
         .orderBy(genus.description)
 ```
-I need to add in a max ship week value from a Shipping Records table. This table has a many-to-many relationship with the Plant table. 
+Next, I need to add in a max ship week value from a Shipping Records table. This table has a many-to-many relationship with the Plant table. 
 
-Now, I create the ship week subquery _above the main query_: 
+To begin, I create the ship week subquery _above the main query_ in the file: 
 ```ts 
 import { db } from "@/index"
 import { plant, genus } from "@/schema"
@@ -54,7 +54,7 @@ I need to use `as()` for aliases in the above subquery twice. Once on the max sh
 
 The strange part is that neither alias is referred to in the main query. Instead, I need to refer to the `shipWeekQuery` throughout.
 
-Next, I can add the subquery to the main query with a left join: 
+Finally, I can add the subquery to the main query with a left join: 
 ```ts 
 const plantData = await db.select({
         ID: plant.plantVarietyInfoId,
