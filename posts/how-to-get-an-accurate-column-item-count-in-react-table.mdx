@@ -15,11 +15,11 @@ I've been working with [React Table v8](https://tanstack.com/table/v8/docs/intro
 
 It has allowed me to quickly create a very useful table for a large amount of data. 
 
-The only problem with this data: It has a lot of null values saved over the last approximately 15 years. 
+The only problem with this data: It has a lot of null values saved over approximately 15 years. 
 
 I implemented column filters like you see in [this React Table example](https://tanstack.com/table/v8/docs/framework/react/examples/filters), but _I noticed the item count shown in the placeholder text was off_.
 
-The code in the docs example giving the column item count for the filter input placehold:
+The code in the docs example giving the column item count for the filter input placeholder:
 
 ```ts
 <DebouncedInput
@@ -50,9 +50,9 @@ Spreading the Map returned from `column.getFacetedUniqueValues()` into a new arr
 
 I filter that array to eliminate any null, empty or false values and finally, get the length value of the array. 
 
-You would want to handle this differently if you were filtering boolean or number data. 
+You would want to handle this differently if you were filtering boolean or numerical data. 
 
-In this example, I'm filtering a text field and only looking for a truthy return in the filter. 
+In this example, I'm filtering a text field and only looking for a truthy return in the filter method. 
 
 Now I have an accurate column item count that does not include any null or empty values. 
 
@@ -62,9 +62,9 @@ In the end, my stakeholders wanted to be able to filter by the null values in th
 
 To do this, you need to replace the null data in the React Table with something else. 
 
-You can do this in the accessor function as you create your columns.
+You can do this in the [accessor function](https://tanstack.com/table/v8/docs/guide/column-defs#accessor-functions) as you create your columns.
 
-Here is part to add in your accessor:
+Here is the part to add in your accessor function:
  
 ```ts 
 if (row[key] == null) return '✖'
