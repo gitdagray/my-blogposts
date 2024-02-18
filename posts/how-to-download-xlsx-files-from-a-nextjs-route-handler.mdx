@@ -1,0 +1,145 @@
+---
+title: 'How to Download xlsx Files from a Next.js Route Handler'
+description: 'What I did when I needed an accurate column item count that did not include null values.'
+date: '2024-02-18'
+modified: '2024-02-18'
+tags: ['nextjs','react','excel','xlsx']
+cover_image: true
+---
+
+**TLDR:** You can set up a Next.js Route Handler that creates and downloads Microsoft Excel (xlsx) files. 
+
+## XLSX Files
+
+No matter where you work as a developer, there's a good chance someone will ask you to send them an MS Excel spreadsheet sooner or later. Those files end with the extension xlsx or xls. 
+
+At my job, I manage a large data project and have regularly received requests for table exports as spreadsheets. 
+
+I decided to set up an API endpoint via Next.js route handler which will allow my co-workers to create their own table exports on demand. 
+
+## xlsx dependency
+
+The [xlsx](https://www.npmjs.com/package/xlsx) package is also known as SheetJS. 
+
+Install xlsx:
+
+```bash
+npm i xlsx
+```
+Then import it:
+
+```ts 
+import * as XLSX from 'xlsx'
+```
+My Next.js route handler starts by receiving a parameter with the requested table name. I'm also including some pseudo-code comments to follow the logic process until I get to the xlsx details.
+
+```ts 
+/* example path: /api/tables/[table] */
+
+export async function GET(
+    request: NextRequest,
+    { params }: { params: { table: string } }
+) {
+    // check for authorized user first! 
+    try {
+        const { table } = params
+        if (!table) throw new Error('Table name required')
+
+        // check table name with list of your table names here
+
+        // if table doesn't exist, throw an error 
+
+        // Query: SELECT * FROM your table and get a JSON response 
+
+    } catch (e) {
+        if (e instanceof Error) {
+            return new Response(e.message, {
+                status: 400,
+            })
+        }
+    }
+    
+
+}
+```
+
+## Creating the XLSX File 
+
+Here's the good stuff using the xlsx package:
+ 
+```ts 
+// ...previous code 
+
+// Query: SELECT * FROM your table and get a JSON response
+
+// Create a new XLSX workbook:
+const workbook = XLSX.utils.book_new()
+
+// Create a new worksheet: 
+const worksheet = XLSX.utils.json_to_sheet(jsonTableData)
+
+// Append the sheet to the workbook: 
+XLSX.utils.book_append_sheet(workbook, worksheet, "MySheet")
+
+// Create data buffer 
+const buffer = XLSX.write(workbook, { type: "buffer", bookType: "xlsx" })
+
+// Create and send a new Response
+return new Response(buffer, {
+    status: 200,
+    headers: {
+        'Content-Disposition': `attachment; filename="${table}.xlsx"`,
+        'Content-Type': 'application/vnd.ms-excel',
+    }
+})
+
+// } catch (e) { and rest of code...
+```
+You can find another similar example using Express in the [SheetJS docs](https://docs.sheetjs.com/docs/solutions/output#example-server-responses). 
+
+The key to success here is creating the buffer with the `XLSX.write` method, and then sending it in the Response with the proper headers. 
+
+## Other File Types
+
+Do you want to download CSV (comma-separated) or TSV (tab-separated) files? 
+
+Or maybe just display an HTML version? 
+
+No problem! 
+
+You can find all of the appropriate methods in the docs, but here is how I allow CSV downloads, too. 
+
+I'm looking for a `format` parameter. If it equals `csv`, then I'm sending that file type instead. 
+
+```ts
+/* example path: /api/tables/[table]?format=csv */
+
+// begin route handler code above 
+
+// put this somewhere before the XLSX creation and response 
+const searchParams = request.nextUrl.searchParams
+const format = searchParams.get('format')
+
+if (format === 'csv') {
+
+    const csv = XLSX.utils.sheet_to_csv(worksheet, {
+        forceQuotes: true,
+    })
+
+    return new Response(csv, {
+        status: 200,
+        headers: {
+            'Content-Disposition': `attachment; filename="${tableName}.csv"`,
+            'Content-Type': 'text/csv',
+        }
+    })
+}
+```
+## Final Notes:
+
+- Always check for an authorized user with your auth of choice. 
+
+- Don't allow SQL injections. I'm verifying the `table` parameter with a list of accurate table names. Only those specific values are allowed. 
+
+Enjoy creating downloads!
+
