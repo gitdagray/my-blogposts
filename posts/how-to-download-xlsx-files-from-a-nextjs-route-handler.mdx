@@ -13,9 +13,9 @@ cover_image: true
 
 No matter where you work as a developer, there's a good chance someone will ask you to send them an MS Excel spreadsheet sooner or later. Those files end with the extension xlsx or xls. 
 
-At my job, I manage a large data project and have regularly received requests for table exports as spreadsheets. 
+At my job, I manage a large data project and regularly receive requests for table exports as spreadsheets. 
 
-I decided to set up an API endpoint via Next.js route handler which will allow my co-workers to create their own table exports on demand. 
+I decided to set up an API endpoint via Next.js route handler which will allow my boss and co-workers to create and download their own table exports on demand. 
 
 ## xlsx dependency
 
@@ -31,7 +31,7 @@ Then import it:
 ```ts 
 import * as XLSX from 'xlsx'
 ```
-My Next.js route handler starts by receiving a parameter with the requested table name. I'm also including some pseudo-code comments to follow the logic process until I get to the xlsx details.
+My Next.js route handler starts by receiving a parameter with the requested table name. I'm also including some pseudo-code comments to allow you to follow the logic process until I get to the xlsx details.
 
 ```ts 
 /* example path: /api/tables/[table] */
@@ -45,11 +45,11 @@ export async function GET(
         const { table } = params
         if (!table) throw new Error('Table name required')
 
-        // check table name with list of your table names here
+        // check table name with list of table names here
 
         // if table doesn't exist, throw an error 
 
-        // Query: SELECT * FROM your table and get a JSON response 
+        // Query: SELECT * FROM table and get a JSON response 
 
     } catch (e) {
         if (e instanceof Error) {
@@ -78,7 +78,7 @@ const workbook = XLSX.utils.book_new()
 // Create a new worksheet: 
 const worksheet = XLSX.utils.json_to_sheet(jsonTableData)
 
-// Append the sheet to the workbook: 
+// Append the worksheet to the workbook: 
 XLSX.utils.book_append_sheet(workbook, worksheet, "MySheet")
 
 // Create data buffer 
@@ -95,7 +95,7 @@ return new Response(buffer, {
 
 // } catch (e) { and rest of code...
 ```
-You can find another similar example using Express in the [SheetJS docs](https://docs.sheetjs.com/docs/solutions/output#example-server-responses). 
+You can find a similar example using Express in the [SheetJS docs](https://docs.sheetjs.com/docs/solutions/output#example-server-responses). 
 
 The key to success here is creating the buffer with the `XLSX.write` method, and then sending it in the Response with the proper headers. 
 
@@ -107,7 +107,7 @@ Or maybe just display an HTML version?
 
 No problem! 
 
-You can find all of the appropriate methods in the docs, but here is how I allow CSV downloads, too. 
+You can find all of the appropriate methods in the [SheetJS docs](https://docs.sheetjs.com/), but here is how I allow CSV downloads, too. 
 
 I'm looking for a `format` parameter. If it equals `csv`, then I'm sending that file type instead. 
 
