@@ -1,6 +1,6 @@
 ---
 title: 'How to Download xlsx Files from a Next.js Route Handler'
-description: 'Let your boss and co-workers download their own exports.'
+description: 'Make table exports in MS Excel and CSV formats available on demand.'
 date: '2024-02-18'
 modified: '2024-02-18'
 tags: ['nextjs','react','excel','xlsx']
@@ -95,7 +95,7 @@ return new Response(buffer, {
 
 // } catch (e) { and rest of code...
 ```
-You can find a similar example using Express in the [SheetJS docs](https://docs.sheetjs.com/docs/solutions/output#example-server-responses). 
+You can find a similar example for a Node.js & Express server in the [SheetJS docs](https://docs.sheetjs.com/docs/solutions/output#example-server-responses). 
 
 The key to success here is creating the buffer with the `XLSX.write` method, and then sending it in the Response with the proper headers. 
 
@@ -107,7 +107,7 @@ Or maybe just display an HTML version?
 
 No problem! 
 
-You can find all of the appropriate methods in the [SheetJS docs](https://docs.sheetjs.com/), but here is how I allow CSV downloads, too. 
+You can find all of the appropriate XLSX methods in the [SheetJS docs](https://docs.sheetjs.com/), but here is how I provide CSV downloads, too. 
 
 I'm looking for a `format` parameter. If it equals `csv`, then I'm sending that file type instead. 
 
@@ -137,7 +137,7 @@ if (format === 'csv') {
 ```
 ## Final Notes:
 
-- Always check for an authorized user with your auth of choice. 
+- Always check for an authorized user. 
 
 - Don't allow SQL injections. I'm verifying the `table` parameter with a list of accurate table names. Only those specific values are allowed. 
 
