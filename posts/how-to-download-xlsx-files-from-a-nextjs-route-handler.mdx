@@ -2,7 +2,7 @@
 title: 'How to Download xlsx Files from a Next.js Route Handler'
 description: 'Make table exports in MS Excel and CSV formats available on demand.'
 date: '2024-02-18'
-modified: '2024-02-18'
+modified: '2024-03-01'
 tags: ['nextjs','react','excel','xlsx']
 cover_image: true
 ---
@@ -19,14 +19,16 @@ I decided to set up an API endpoint via Next.js route handler which will allow m
 
 ## xlsx dependency
 
-The [xlsx](https://www.npmjs.com/package/xlsx) package is also known as SheetJS. 
+The [xlsx](https://docs.sheetjs.com/docs/getting-started/installation/frameworks) package is also known as SheetJS. 
 
 Install xlsx:
 
 ```bash
-npm i xlsx
+npm i --save https://cdn.sheetjs.com/xlsx-0.20.1/xlsx-0.20.1.tgz
 ```
-Then import it:
+**Note:** Do NOT get the xlsx package from the npm registry with `npm install xlsx`. Sheetjs has stopped using the public registry at version 18.5. You will see the version in the public registry is 2+ years old and has a high severity vulnerability now. You can confirm this vulnerability on the [Socket.dev xlsx page](https://socket.dev/npm/package/xlsx).
+
+Next, import xlsx into your project:
 
 ```ts 
 import * as XLSX from 'xlsx'
