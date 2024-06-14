@@ -1,0 +1,35 @@
+---
+title: 'FIX: Git Bash is Slow and has Strange Random Characters in VS Code'
+description: 'This is how I fixed my VS Code git bash terminal when it became slow and started printing weird characters.'
+date: '2024-06-14'
+modified: '2024-06-14'
+tags: ['git bash','vs code','vscode']
+cover_image: true
+---
+
+**TLDR:** If you're using git bash in VS Code and notice it slows down and/or starts printing random characters, here's how to fix it.
+
+## The Problem
+
+After a recent VS Code update, I noticed git bash really slowed down.  
+
+Sometimes it even output random weird characters like the ones you see in my terminal window below.
+
+<CustomImage src="https://raw.githubusercontent.com/gitdagray/my-blogposts/main/images/git-bash-terminal-240614.png" alt="git bash with strange characters" width={2560} height={1440} priority />
+
+## How to Fix It (for now)
+
+Press `Ctrl+,` or click the cog icon in the bottom left of VS Code to open Settings. 
+
+Use the search bar and search for `terminal integrated shell`. 
+
+The setting for `Terminal > Integrated > Shell Integration > Enabled` should show up. 
+
+Uncheck the box for this setting. 
+
+If you don't find that setting, you can open the JSON settings file and add this line: 
+`"terminal.integrated.shellIntegration.enabled": false,`
+
+## Check Back 
+
+This seems to be a bug after a recent VS Code update. I don't think this setting provides anything I will miss, but if you do, you may want to check back and re-enable this in the future. 
