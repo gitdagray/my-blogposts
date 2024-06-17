@@ -44,7 +44,7 @@ import XLSX from "xlsx-js-style"
 ```
 You can use this package in any JavaScript or TypeScript project.
 
-## Creating and Styling the XLSX File 
+## Creating and Styling the XLSX Worksheet 
 
 Here's an example of how to use the xlsx-js-style package:
  
@@ -82,9 +82,6 @@ const dataRowHeight = Array.from({ length: userData[0].length }, () => ({ hpt: 3
 
 // Combine header row height and data row height
 const rowHeight = [...headerRowHeight, ...dataRowHeight]
-
-// Create a new XLSX workbook:
-const workbook = XLSX.utils.book_new()
 
 // Create a new worksheet: 
 const worksheet = XLSX.utils.json_to_sheet([])
@@ -152,6 +149,9 @@ for (let row = 0; row <= rowCount; row++) {
 }
 
 return worksheet
+
+// After this, add worksheet to workbook, download, etc. 
+// See docs and my previous article
 ```
 
 ## Other Styles Available
