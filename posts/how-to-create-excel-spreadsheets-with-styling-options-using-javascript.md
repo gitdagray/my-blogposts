@@ -1,0 +1,175 @@
+---
+title: 'How to Create Excel Spreadsheets with Styling Options Using JavaScript'
+description: 'Create MS Excel Spreadsheets with cell styling options.'
+date: '2024-06-17'
+modified: '2024-06-17'
+tags: ['javascript','js','excel','xlsx','sheetjs','react','nextjs']
+cover_image: true
+---
+
+**TLDR:** An Open Source fork of SheetJS lets you create and style Excel spreadsheets with JavaScript.
+
+## Creating XLSX Files
+
+An XLSX file is a Microsoft Excel spreadsheet. 
+
+I previously documented [How to Download xlsx Files from a Next.js Route Handler](https://www.davegray.codes/posts/how-to-download-xlsx-files-from-a-nextjs-route-handler).  
+
+In that blog post, I used the [xlsx](https://docs.sheetjs.com/docs/getting-started/installation/frameworks) package which is also known as SheetJS. 
+
+However, I discovered a limitation of the community edition of the xlsx package: It did not allow the row and cell styling that my stakeholders desired in their final product. 
+
+The PRO edition does allow styling, but I looked for an open source solution and found it.
+
+## xlsx-js-style
+
+[xlsx-js-style](https://www.npmjs.com/package/xlsx-js-style) is a fork of SheetJS combined with code from a couple of other open source projects that were adding styles to SheetJS. 
+
+The only drawback I see is the last version was published 2 years ago, but it does not have the vulnerability I warned about if you install the [xlsx dependency](https://www.davegray.codes/posts/how-to-download-xlsx-files-from-a-nextjs-route-handler#xlsx-dependency) directly from npm.
+
+[xlsx-js-style](https://www.npmjs.com/package/xlsx-js-style) allows you to create Excel spreadsheets with JavaScript and style the cells with borders, colors, alignment, and font styles. 
+
+## Add xlsx-js-style to Your Project
+
+Install xlsx:
+
+```bash
+npm i xlsx-js-style
+```
+
+Next, import xlsx-js-style into your project:
+
+```ts 
+import XLSX from "xlsx-js-style"
+```
+You can use this package in any JavaScript or TypeScript project.
+
+## Creating and Styling the XLSX File 
+
+Here's an example of how to use the xlsx-js-style package:
+ 
+```ts 
+// define your headers 
+const headers = [
+    "FirstName",
+    "LastName",
+    "Email",
+]
+
+// set column widths
+const colWidths = [
+        { wch: 30 },
+        { wch: 30 },
+        { wch: 50 },
+]
+
+// get the data 
+const userData = await getUserData()
+
+// early return if no data
+if (!userData || !userData[0]) {
+    return null
+}
+
+// set header row height 
+// consider if you have vertical headers
+const headerRowHeight = [
+    { hpt: 80 },
+]
+
+// Dynamically set row height based on size of data
+const dataRowHeight = Array.from({ length: userData[0].length }, () => ({ hpt: 30 }))
+
+// Combine header row height and data row height
+const rowHeight = [...headerRowHeight, ...dataRowHeight]
+
+// Create a new XLSX workbook:
+const workbook = XLSX.utils.book_new()
+
+// Create a new worksheet: 
+const worksheet = XLSX.utils.json_to_sheet([])
+
+// Assign widths to columns
+worksheet['!cols'] = colWidths
+
+// Assign height to rows
+worksheet['!rows'] = rowHeight
+
+// Enable auto-filter for columns
+worksheet['!autofilter'] = { ref: "A1:C1" }
+
+// Add the headers to the worksheet: 
+XLSX.utils.sheet_add_aoa(worksheet, [headers])
+
+// add data to sheet 
+XLSX.utils.sheet_add_json(worksheet, userData, {
+    skipHeader: true,
+    origin: -1
+})
+
+// get size of sheet 
+const range = XLSX.utils.decode_range(worksheet["!ref"] ?? "")
+const rowCount = range.e.r
+const columnCount = range.e.c
+
+// Add formatting by looping through data in sheet 
+for (let row = 0; row <= rowCount; row++) {
+    for (let col = 0; col <= columnCount; col++) {
+        const cellRef = XLSX.utils.encode_cell({ r: row, c: col })
+
+        // Add this format to every cell
+        worksheet[cellRef].s = {
+            alignment: {
+                horizontal: "left",
+                wrapText: true,
+            },
+        }
+
+        // vertical header - 1st column only
+        if (row === 0 && col === 0) {
+            worksheet[cellRef].s = {
+                //spreads in previous cell settings
+                ...worksheet[cellRef].s,
+                alignment: {
+                    horizontal: "center",
+                    vertical: "center",
+                    wrapText: false,
+                    textRotation: 180,
+                },
+            }
+        }
+
+        // Format headers bold
+        if (row === 0) {
+            worksheet[cellRef].s = {
+                //spreads in previous cell settings
+                ...worksheet[cellRef].s, 
+                font: { bold: true },
+            }
+        }
+
+    }
+}
+
+return worksheet
+```
+
+## Other Styles Available
+
+I only applied a few of the styles available in the above example. 
+
+Checkout all of the available style settings on the [npm page for xlsx-js-style](https://www.npmjs.com/package/xlsx-js-style).
+
+## Learning More:
+
+- Read my previous article on [How to Download xlsx Files](https://www.davegray.codes/posts/how-to-download-xlsx-files-from-a-nextjs-route-handler) if you want to create these files in a Node.js backend and request them from your frontend. My example is with Next.js, but you could just set it up in Node.js without Next.js. 
+
+- If you read the previous article or watch the video below, remember to replace the `xlsx` dependency with the `xlsx-js-style` dependency I discussed in this article. 
+
+Enjoy creating Excel spreadsheets with JavaScript!
+
+## Watch My Next.js Reports tutorial with Microsoft Excel Video:
+
+<Video id="Zz_mP5gAnxc" />
+
+

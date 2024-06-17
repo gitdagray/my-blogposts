@@ -52,7 +52,7 @@ const shipWeekQuery = db.select({
 
 I need to use `as()` for aliases in the above subquery twice. Once on the max ship week value, and once on the overall subquery. Without these, the subquery will not work. 
 
-The strange part is that neither alias is referred to in the main query. Instead, I need to refer to the `shipWeekQuery` throughout.
+When adding the subquery `ShipWeek` value to the main query, I need to refer to the `shipWeekQuery`.
 
 Finally, I can add the subquery to the main query with a left join: 
 ```ts 
