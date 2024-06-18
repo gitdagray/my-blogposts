@@ -1,0 +1,403 @@
+---
+title: 'Next.js Server Actions with next-safe-action'
+description: 'The next-safe-action library handles server action type safety, input validation, errors and more.'
+date: '2024-06-18'
+modified: '2024-06-18'
+tags: ['nextjs','typesafety','validation','serveractions','rsc']
+cover_image: true
+---
+
+**TLDR:** Add type safe and validated server actions to your Next.js App Router project with next-safe-action.
+
+## Next.js Server Actions
+
+[Server Actions](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations) are asynchronous functions executed on the server in Next.js. 
+
+They are defined with the `"use server"` directive and can be used 
+in both server and client components for handling form submissions and data mutations.
+
+Over the last year, I've seen them applied in a variety of ways, and I've used them in projects myself, too.
+
+Now, I have recently discovered the [next-safe-action](https://next-safe-action.dev/) library, and I like the structure, ease-of-use, and extra features it provides. 
+
+## An Example Server Action without next-safe-action
+
+I think the best way to show why I like [next-safe-action](https://next-safe-action.dev/) is to show how I implemented a Next.js server action without the library first. 
+
+Afterwards, I will show the refactor with [next-safe-action](https://next-safe-action.dev/).
+
+Here's an example server action from a repository and tutorial I recently published on creating a [Next.js Modal Form with react-hook-form, ShadCN/ui, Server Actions and Zod validation](https://youtu.be/WyL_Jc6_-sY).
+
+
+```ts
+// src/app/actions/actions.ts
+"use server"
+
+import { UserSchema } from "@/schemas/User"
+import type { User } from "@/schemas/User"
+
+type ReturnType = {
+    message: string,
+    errors?: Record<string, unknown>
+}
+
+export async function saveUser(user: User): Promise<ReturnType> {
+    
+    const parsed = UserSchema.safeParse(user)
+
+    if (!parsed.success) {
+        return {
+            message: "Submission Failed",
+            errors: parsed.error.flatten().fieldErrors
+        }
+    }
+
+    await fetch(`http://localhost:3500/users/${user.id}`, {
+        method: 'PATCH',
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            firstname: user.firstname,
+            lastname: user.lastname,
+            email: user.email,
+        })
+    })
+
+    return { message: "User Updated! 🎉" }
+}
+```
+You can see above that I was using a local `json-server` instance in the tutorial to update user data. 
+
+Before the update occurs, the data is validated with [Zod](https://zod.dev/). 
+
+If the validation fails, Zod validation errors are sent back to the client component with the ZodError type `flatten` method applied. 
+
+Now let's compare to the refactored version using [next-safe-action](https://next-safe-action.dev/).
+
+## An Example Server Action with next-safe-action
+
+```ts 
+// src/app/actions/actions.ts
+"use server"
+
+import { UserSchema } from "@/schemas/User"
+import { actionClient } from "@/lib/safe-action"
+import { flattenValidationErrors } from "next-safe-action"
+
+export const saveUserAction = actionClient
+    .schema(UserSchema, {
+        handleValidationErrorsShape: (ve) => flattenValidationErrors(ve).fieldErrors,
+    })
+    .action(async ({ parsedInput: { id, firstname, lastname, email } }) => {
+
+        await fetch(`http://localhost:3500/users/${id}`, {
+            method: 'PATCH',
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                firstname: firstname,
+                lastname: lastname,
+                email: email,
+            })
+        })
+
+        return { message: "User Updated! 🎉" }
+    })
+```
+The file has shrunk down from 33 lines to 26 lines of code.
+
+Starting at the top you can see I still import the Zod UserSchema I have defined. The inferred User type is no longer imported. 
+
+New imports include `actionClient` and `flattenValidationErrors`. 
+
+Instead of `export async function`, I'm using `export const` and starting the definition of `saveUserAction` with the `actionClient`. 
+
+I chain the `schema` method to the `actionClient` while passing in the `UserSchema` and also setting the `handleValidationErrorsShape` option to use the imported `flattenValidationErrors` which is similar to my original version of the function that used the ZodError type method `flatten`.
+
+Next, I chain the `action` method, and call the async function inside of it. It supplies a `parsedInput` prop where I destructure the input data sent to the server action. 
+
+The remainder of the function remains unchanged. 
+
+Note that in this version I did not define a `ReturnType` as I did in the original. 
+
+The return type is the result defined by the [useAction hook return object](https://next-safe-action.dev/docs/execution/hooks/useaction#useaction-return-object). I apply the `useAction` hook in the client component. 
+
+While some overhead is saved in the actual server action code as you see above, even more is saved in the client component. 
+
+Below, I will again show before and after code versions. This time we will look at the client component using [react-hook-form](https://react-hook-form.com/).
+
+## An Example Client Component without next-safe-action
+ 
+```ts 
+// src/app/edit/[id]/UserForm.tsx
+"use client"
+
+import { useForm } from "react-hook-form"
+import { Form } from "@/components/ui/form"
+import { Button } from "@/components/ui/button"
+import { InputWithLabel } from "@/components/InputWithLabel"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { UserSchema } from "@/schemas/User"
+import type { User } from "@/schemas/User"
+import { saveUser } from "@/app/actions/actions"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+
+type Props = {
+    user: User
+}
+
+export default function UserForm({ user }: Props) {
+    const [message, setMessage] = useState('')
+    const [errors, setErrors] = useState({})
+    const router = useRouter()
+
+    const form = useForm<User>({
+        mode: 'onBlur',
+        resolver: zodResolver(UserSchema),
+        defaultValues: { ...user },
+    })
+
+    useEffect(() => {
+        // boolean to indicate if form has not been saved
+        localStorage.setItem("userFormModified", form.formState.isDirty.toString())
+    }, [form.formState.isDirty])
+
+    async function onSubmit() {
+        setMessage('')
+        setErrors({})
+        /* No need to validate here because 
+        react-hook-form already validates with 
+        the Zod schema */
+        const result = await saveUser(form.getValues())
+        if (result?.errors) {
+            setMessage(result.message)
+            setErrors(result.errors)
+            return
+        } else {
+            setMessage(result.message)
+            // update client-side cache
+            router.refresh() 
+            // reset dirty fields
+            form.reset(form.getValues())
+        }
+    }
+
+    return (
+        <div>
+            {message ? (
+                <h2 className="text-2xl">{message}</h2>
+            ) : null}
+
+            {errors ? (
+                <div className="mb-10 text-red-500">
+                    {Object.keys(errors).map(key => (
+                        <p key={key}>{`${key}: ${errors[key as keyof typeof errors]}`}</p>
+                    ))}
+                </div>
+            ) : null}
+
+            <Form {...form}>
+                <form onSubmit={(e) => {
+                    e.preventDefault()
+                    form.handleSubmit(onSubmit)();
+                }} className="flex flex-col gap-4">
+
+                    <InputWithLabel
+                        fieldTitle="First Name"
+                        nameInSchema="firstname"
+                    />
+                    <InputWithLabel
+                        fieldTitle="Last Name"
+                        nameInSchema="lastname"
+                    />
+                    <InputWithLabel
+                        fieldTitle="Email"
+                        nameInSchema="email"
+                    />
+                    <div className="flex gap-4">
+                        <Button>Submit</Button>
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            onClick={() => form.reset()}
+                        >Reset</Button>
+                    </div>
+                </form>
+            </Form>
+        </div>
+    )
+}
+```
+In the above example, I had to set state for both the message and errors that the original server action could return. 
+
+I also needed to consider that state in the onSubmit function. 
+
+In the refactored version below, you can see how this is simplified.
+
+## An Example Client Component without next-safe-action
+
+```ts
+// src/app/edit/[id]/UserForm.tsx
+"use client"
+
+import { useForm } from "react-hook-form"
+import { Form } from "@/components/ui/form"
+import { Button } from "@/components/ui/button"
+import { InputWithLabel } from "@/components/InputWithLabel"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { UserSchema } from "@/schemas/User"
+import type { User } from "@/schemas/User"
+import { saveUserAction } from "@/app/actions/actions"
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
+
+import { useAction } from "next-safe-action/hooks"
+import { DisplayServerActionResponse } from "@/components/DisplayServerActionResponse"
+
+type Props = {
+    user: User
+}
+
+export default function UserForm({ user }: Props) {
+    const router = useRouter()
+    const { execute, result, isExecuting } = useAction(saveUserAction)
+
+    const form = useForm<User>({
+        resolver: zodResolver(UserSchema),
+        defaultValues: { ...user },
+    })
+
+    useEffect(() => {
+        // boolean to indicate if form has not been saved
+        localStorage.setItem("userFormModified", form.formState.isDirty.toString())
+    }, [form.formState.isDirty])
+
+    async function onSubmit() {
+        /* No need to validate here because 
+        react-hook-form already validates with 
+        the Zod schema */
+        execute(form.getValues())
+        // update client-side cache
+        router.refresh()
+        // reset dirty fields
+        form.reset(form.getValues())
+    }
+
+    return (
+        <div>
+            <DisplayServerActionResponse result={result} />
+
+            <Form {...form}>
+                <form onSubmit={(e) => {
+                    e.preventDefault()
+                    form.handleSubmit(onSubmit)();
+                }} className="flex flex-col gap-4">
+
+                    <InputWithLabel
+                        fieldTitle="First Name"
+                        nameInSchema="firstname"
+                    />
+                    <InputWithLabel
+                        fieldTitle="Last Name"
+                        nameInSchema="lastname"
+                    />
+                    <InputWithLabel
+                        fieldTitle="Email"
+                        nameInSchema="email"
+                    />
+                    <div className="flex gap-4">
+                        <Button>{isExecuting ? "Working..." : "Submit"}</Button>
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            onClick={() => form.reset()}
+                        >Reset</Button>
+                    </div>
+                </form>
+            </Form>
+        </div>
+    )
+}
+```
+In this refactored version, I also imported the [useAction](https://next-safe-action.dev/docs/execution/hooks/useaction) hook and a component I created called `DisplayServerActionResponse`.
+
+I eliminated all usage of `useState`.
+
+`DisplayServerActionResponse` receives the `result` that is provided by the useAction hook and sent back from the server action. 
+
+`useAction` also provides an `execute` function and an `isExecuting` boolean. (Check the [docs](https://next-safe-action.dev/docs/introduction) for what else it can provide, too.)
+
+All of this greatly reduces the logic I needed to put in the `onSubmit` function. 
+
+Receiving the `result` from the server action makes it easy to abstract the displayed response to the `DisplayServerActionResponse` component, too. 
+
+Here's a quick look at that component as well..
+
+## Displaying the Server Action Result 
+
+```ts
+type Props = {
+    result: {
+        data?: {
+            message?: string,
+        },
+        errors?: {
+            serverError?: string,
+            fetchError?: string,
+            validationErrors?: Record<string, string[] | undefined> | undefined,
+        },
+    }
+}
+
+export function DisplayServerActionResponse({ result }: Props) {
+
+    const { data, errors } = result
+
+    return (
+        <>
+            {/* Success Message */}
+            {data?.message ? (
+                <h2 className="text-2xl mb-2">{data.message}</h2>
+            ) : null}
+
+            {errors?.serverError ? (
+                <div className="mb-10 text-red-500">
+                    <p>{errors.serverError}</p>
+                </div>
+            ) : null}
+
+            {errors?.fetchError ? (
+                <div className="mb-10 text-red-500">
+                    <p>{errors.fetchError}</p>
+                </div>
+            ) : null}
+
+            {errors?.validationErrors ? (
+                <div className="mb-10 text-red-500">
+                    {Object.keys(errors.validationErrors).map(key => (
+                        <p key={key}>{`${key}: ${errors.validationErrors && errors.validationErrors[key as keyof typeof errors.validationErrors]}`}</p>
+                    ))}
+                </div>
+            ) : null}
+        </>
+    )
+}
+```
+Above you can see that [next-safe-action](https://next-safe-action.dev/) handles not only validation errors with the Zod schema I provided, but it also provides server errors and fetch errors. 
+
+In addition, the result object contains the success message I provided in the server action. 
+
+## Learn More
+
+The above is just one example and a simple one at that! Dive into the docs or your own specific use case to see what else [next-safe-action](https://next-safe-action.dev/) is capable of. 
+
+I plan to refactor my old server actions to use this library. 
+
+## Watch My Next.js Modal Form w/ React-Hook-Form, ShadCN/ui Dialog, Server Actions & Validation Video:
+
+<Video id="https://youtu.be/WyL_Jc6_-sY" />
+
+
