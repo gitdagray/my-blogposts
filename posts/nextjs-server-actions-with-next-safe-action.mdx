@@ -114,19 +114,19 @@ New imports include `actionClient` and `flattenValidationErrors`.
 
 Instead of `export async function`, I'm using `export const` and starting the definition of `saveUserAction` with the `actionClient`. 
 
-I chain the `schema` method to the `actionClient` while passing in the `UserSchema` and also setting the `handleValidationErrorsShape` option to use the imported `flattenValidationErrors` which is similar to my original version of the function that used the ZodError type method `flatten`.
+I chain the `schema` method to the `actionClient` while passing in the `UserSchema`. I also set the `handleValidationErrorsShape` option to use the imported `flattenValidationErrors` method. This method is similar to the ZodError type method `flatten` that I used in the original function.
 
-Next, I chain the `action` method, and call the async function inside of it. It supplies a `parsedInput` prop where I destructure the input data sent to the server action. 
+Next, I chain the `action` method and call the async function inside of it. It supplies a `parsedInput` prop. I destructure the prop to get the input data sent to the server action. 
 
 The remainder of the function remains unchanged. 
 
-Note that in this version I did not define a `ReturnType` as I did in the original. 
+Note that in this refactored version I did not define a `ReturnType`. 
 
 The return type is the result defined by the [useAction hook return object](https://next-safe-action.dev/docs/execution/hooks/useaction#useaction-return-object). I apply the `useAction` hook in the client component. 
 
-While some overhead is saved in the actual server action code as you see above, even more is saved in the client component. 
+While some overhead is saved in the server action code you see above, even more is saved in the client component. 
 
-Below, I will again show before and after code versions. This time we will look at the client component using [react-hook-form](https://react-hook-form.com/).
+Below, I again show before and after code versions. This time the before and afters are of the client component using [react-hook-form](https://react-hook-form.com/).
 
 ## An Example Client Component without next-safe-action
  
@@ -237,7 +237,7 @@ I also needed to consider that state in the onSubmit function.
 
 In the refactored version below, you can see how this is simplified.
 
-## An Example Client Component without next-safe-action
+## An Example Client Component with next-safe-action
 
 ```ts
 // src/app/edit/[id]/UserForm.tsx
@@ -322,17 +322,17 @@ export default function UserForm({ user }: Props) {
     )
 }
 ```
-In this refactored version, I also imported the [useAction](https://next-safe-action.dev/docs/execution/hooks/useaction) hook and a component I created called `DisplayServerActionResponse`.
+In this refactored version, I imported the [useAction](https://next-safe-action.dev/docs/execution/hooks/useaction) hook supplied by next-safe-action and a custom component I created called `DisplayServerActionResponse`.
 
 I eliminated all usage of `useState`.
 
-`DisplayServerActionResponse` receives the `result` that is provided by the useAction hook and sent back from the server action. 
+`DisplayServerActionResponse` receives the `result` that is provided by the useAction hook. It holds the data sent back from the server action. 
 
 `useAction` also provides an `execute` function and an `isExecuting` boolean. (Check the [docs](https://next-safe-action.dev/docs/introduction) for what else it can provide, too.)
 
 All of this greatly reduces the logic I needed to put in the `onSubmit` function. 
 
-Receiving the `result` from the server action makes it easy to abstract the displayed response to the `DisplayServerActionResponse` component, too. 
+Receiving the `result` from the server action makes it easy to abstract the displayed response to the custom `DisplayServerActionResponse` component, too. 
 
 Here's a quick look at that component as well..
 
@@ -386,18 +386,18 @@ export function DisplayServerActionResponse({ result }: Props) {
     )
 }
 ```
-Above you can see that [next-safe-action](https://next-safe-action.dev/) handles not only validation errors with the Zod schema I provided, but it also provides server errors and fetch errors. 
+Above, you can see that [next-safe-action](https://next-safe-action.dev/) provides not only validation errors from the Zod schema I constructed, but it also provides server errors and fetch errors. 
 
-In addition, the result object contains the success message I provided in the server action. 
+In addition, the result object contains the success message I provided from the server action. 
 
 ## Learn More
 
-The above is just one example and a simple one at that! Dive into the docs or your own specific use case to see what else [next-safe-action](https://next-safe-action.dev/) is capable of. 
+This is just one example and a simple one at that! Dive into the docs and solve your own specific use case to see what else [next-safe-action](https://next-safe-action.dev/) is capable of. 
 
-I plan to refactor my old server actions to use this library. 
+I plan to refactor my old server actions to use this library and use it going forward. 
 
-## Watch My Next.js Modal Form w/ React-Hook-Form, ShadCN/ui Dialog, Server Actions & Validation Video:
+### Watch My Next.js Modal Form w/ React-Hook-Form, ShadCN/ui Dialog, Server Actions & Validation Video:
 
-<Video id="https://youtu.be/WyL_Jc6_-sY" />
+<Video id="WyL_Jc6_-sY" />
 
 
