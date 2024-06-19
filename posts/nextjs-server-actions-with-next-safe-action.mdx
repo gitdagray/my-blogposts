@@ -42,6 +42,8 @@ type ReturnType = {
 }
 
 export async function saveUser(user: User): Promise<ReturnType> {
+
+    // Check valid login here
     
     const parsed = UserSchema.safeParse(user)
 
@@ -90,6 +92,8 @@ export const saveUserAction = actionClient
         handleValidationErrorsShape: (ve) => flattenValidationErrors(ve).fieldErrors,
     })
     .action(async ({ parsedInput: { id, firstname, lastname, email } }) => {
+
+        // Check valid login here
 
         await fetch(`http://localhost:3500/users/${id}`, {
             method: 'PATCH',
@@ -344,41 +348,39 @@ type Props = {
         data?: {
             message?: string,
         },
-        errors?: {
-            serverError?: string,
-            fetchError?: string,
-            validationErrors?: Record<string, string[] | undefined> | undefined,
-        },
+        serverError?: string,
+        fetchError?: string,
+        validationErrors?: Record<string, string[] | undefined> | undefined,
     }
 }
 
 export function DisplayServerActionResponse({ result }: Props) {
 
-    const { data, errors } = result
+    const { data, serverError, fetchError, validationErrors } = result
 
     return (
         <>
             {/* Success Message */}
             {data?.message ? (
-                <h2 className="text-2xl mb-2">{data.message}</h2>
+                <h2 className="text-2xl my-2">{data.message}</h2>
             ) : null}
 
-            {errors?.serverError ? (
-                <div className="mb-10 text-red-500">
-                    <p>{errors.serverError}</p>
+            {serverError ? (
+                <div className="my-2 text-red-500">
+                    <p>{serverError}</p>
                 </div>
             ) : null}
 
-            {errors?.fetchError ? (
-                <div className="mb-10 text-red-500">
-                    <p>{errors.fetchError}</p>
+            {fetchError ? (
+                <div className="my-2 text-red-500">
+                    <p>{fetchError}</p>
                 </div>
             ) : null}
 
-            {errors?.validationErrors ? (
-                <div className="mb-10 text-red-500">
-                    {Object.keys(errors.validationErrors).map(key => (
-                        <p key={key}>{`${key}: ${errors.validationErrors && errors.validationErrors[key as keyof typeof errors.validationErrors]}`}</p>
+            {validationErrors ? (
+                <div className="my-2 text-red-500">
+                    {Object.keys(validationErrors).map(key => (
+                        <p key={key}>{`${key}: ${validationErrors && validationErrors[key as keyof typeof validationErrors]}`}</p>
                     ))}
                 </div>
             ) : null}
