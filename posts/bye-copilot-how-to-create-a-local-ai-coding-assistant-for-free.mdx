@@ -1,0 +1,125 @@
+---
+title: 'Bye Copilot - How to Create a Local AI Coding Assistant for Free'
+description: 'Create your own local AI Coding Assistant that integrates with VS Code.'
+date: '2024-06-24'
+modified: '2024-06-24'
+tags: ['ai','copilot','codingassistant','codeassistant']
+cover_image: true
+---
+
+**TLDR:** Create your own local AI Coding Assistant that integrates with VS Code.
+
+## AI Coding Assistants
+
+I didn't jump onboard the AI Coding Assistant train at first. 
+
+However, I now open up a chat with [ChatGPT](https://chatgpt.com/) as often as I do MDN.
+
+I've found it's often a quicker reference for exactly what I need. 
+
+I have considered paying the monthly fee for [GitHub Copilot](https://github.com/features/copilot), but what if you could use open source large language models (LLMs) to create your own AI Coding Assistant? 
+
+Now you can.
+
+## Install Ollama
+
+Start by going to [Ollama.com](https://ollama.com/) and downloading the version for your operating system. 
+
+Note: As I write this, the Windows version is still considered a "preview". After installing on Windows, I had to restart my computer for `ollama` to be available at the command line.
+
+Open a terminal window and type `ollama --help` to confirm you have Ollama installed and your computer can find it.
+
+## Pick an Open Source LLM 
+
+Visit the [EvalPlus Leaderboard](https://evalplus.github.io/leaderboard.html) where the performance of many models are compared. 
+
+There are currently a couple of options in the EvalPlus Top 5 to consider: `DeepSeek-Coder-v2` and `CodeQwen1.5`. 
+
+Before choosing, go back to [Ollama.com](https://ollama.com/) and search the models to look at their details. 
+
+I personally decided to go with [codeqwen](https://ollama.com/library/codeqwen). It is a 4.2GB download and `deepseek-coder-v2` is 8.9GB.
+
+You can try out several LLMs if you want to.
+
+After choosing at least one, copy the `ollama` command and run it in your terminal window to download your LLM of choice. 
+
+For example, the command on the [codeqwen](https://ollama.com/library/codeqwen) page is `ollama run codeqwen`.
+
+## Add the Continue VS Code Extension 
+
+Open up VS Code and click the extensions menu icon. 
+
+Search for `continue`. 
+
+You should find `Continue` by [continue.dev](https://www.continue.dev/).
+
+Install the extension and you should find it by icon or name in the activity bar afterwards. 
+ 
+Click it to open and you should see a splash screen. 
+
+The screen will confirm Ollama is installed and provide other recommendations that you can ignore. 
+
+Click the "Local" button and the "next / continue" button. 
+
+You should now have a chat screen that opened over your filetree (if your filetree is on the left side).
+
+## Configuring Continue
+
+At the bottom of the chat window, select `Ollama - codeqwen:latest` from the menu. 
+
+Click the settings icon to open up the `config.json` file. 
+
+Look for the `tabAutocompleteModel` setting. 
+
+Change both the `title` and `model` values to `codeqwen`.
+
+You will also see a `custom commands` setting like this:
+
+```json 
+"customCommands": [
+    {
+      "name": "test",
+      "prompt": "{{{ input }}}\n\nWrite a comprehensive set of unit tests for the selected code. It should setup, run tests that check for correctness including important edge cases, and teardown. Ensure that the tests are complete and sophisticated. Give the tests just as chat output, don't edit any file.",
+      "description": "Write unit tests for highlighted code"
+    }
+  ],
+```
+You can add your own custom commands here. In this example, if you select code and type test in the chat window, it will execute the prompt you see. 
+
+Here's an example of a custom command I added: 
+
+```json 
+"customCommands": [
+    {
+      "name": "test",
+      "prompt": "{{{ input }}}\n\nWrite a comprehensive set of unit tests for the selected code. It should setup, run tests that check for correctness including important edge cases, and teardown. Ensure that the tests are complete and sophisticated. Give the tests just as chat output, don't edit any file.",
+      "description": "Write unit tests for highlighted code"
+    },
+    {
+      "name": "step",
+      "prompt": "{{{ input }}}\n\nExplain the selected code step by step.",
+      "description": "Code explanation"
+    }
+  ],
+```
+
+## Getting Started:
+
+Click the help icon at the bottom right of the chat window. 
+
+It provides a link to a tutorial, web resources and keyboard shortcuts. 
+
+A couple of quick things to try: 
+
+- Select some existing code, press `Ctrl+L`  to start a chat on the selected code. 
+
+- Select some existing code, type `test` in the chat window, and press enter to generate unit tests for that code.
+
+- Create a new empty code file, press `Ctrl+i` and type instructions for code generation.
+
+
+## Watch My Tutorial on Setting Up an AI Coding Assistant:
+
+<Video id="he0_W5iCv-I" />
+
+
