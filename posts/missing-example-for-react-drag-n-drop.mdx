@@ -1,0 +1,345 @@
+---
+title: 'React Drag and Drop: The Missing Example'
+description: 'Learn React drag and drop with the example missing from most tutorials.'
+date: '2024-08-28'
+modified: '2024-08-28'
+tags: ['react','dndkit','draganddrop','dragndrop']
+cover_image: true
+---
+
+**TLDR:** Learn React drag and drop with the example missing from most tutorials.
+
+## React Drag and Drop
+
+Drag and drop can be a very useful feature in your React  application. 
+
+In a music app, you may want to allow users to reorder songs in a playlist. 
+
+In a workout app, you may want to allow users to reorder exercises in a workout plan. 
+
+Or in a simple todo app, you may want to allow users to reorder tasks in a list. 
+
+In all of these cases, adding drag and drop functionality to your application is a great way to make it more user-friendly.
+
+## dndkit 
+
+[dndkit](https://dndkit.com/) is a drag and drop library for React, and I'll be using it in this article.
+
+I provided a [tutorial for react-beautiful-dnd](https://youtu.be/HeNVPF_fRXI) in the past, but at the time of this article, [dndkit](https://dndkit.com/) is the prevalent drag and drop library for React.
+
+If you are interested, I also have a [drag and drop tutorial for Vanilla JS](https://youtu.be/9Xh_ZpFkROI). 
+
+Let's get started with dndkit by installing it with npm:
+
+```bash
+npm i @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities
+```
+
+## The Missing Example
+
+Most drag and drop code examples show data with an `id` field and other fields like `name` or `description`. 
+
+```json
+[
+        {
+            "id": 1,
+            "artist": "The Beatles",
+            "title": "Hey Jude",
+        },
+        {
+            "id": 2,
+            "artist": "Neil Young",
+            "title": "My My, Hey Hey",
+        },
+        {
+            "id": 3,
+            "artist": "The Rolling Stones",
+            "title": "Wild Horses",
+        }
+]
+```
+
+This makes a nice, simple example, but it ignores how it will likely integrate with a full stack application using a database.
+
+The id field is often also the primary key for a table in the database. 
+
+If we made changes to our playlist above, it would be better to save the playlist order with an additional field like `sequence` or `order`.
+
+```json
+[
+        {
+            "id": 1,
+            "artist": "The Beatles",
+            "title": "Hey Jude",
+            "sequence": 1,
+        },
+        {
+            "id": 2,
+            "artist": "Neil Young",
+            "title": "My My, Hey Hey",
+            "sequence": 2,
+        },
+        {
+            "id": 3,
+            "artist": "The Rolling Stones",
+            "title": "Wild Horses",
+            "sequence": 3,
+        }
+]
+```
+
+Now, when we make changes to the playlist sequence, we can save it back to our database without impacting a primary key.
+
+With this in mind, let's set up a drag and drop example with dndkit.
+
+## List Component Imports
+
+The example List component will receive data that is shaped liked the example data with the sequence field.
+```tsx 
+
+export type Item = {
+    id: number,
+    artist: string,
+    title: string,
+    sequence: number
+}
+
+type Props = {
+    data: Item[]
+}
+```
+
+Let's start with the necessary imports: 
+```tsx 
+// List.tsx 
+import { useState } from 'react'
+
+import {
+    closestCenter, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, TouchSensor, useSensor,
+    useSensors, DndContext
+} from '@dnd-kit/core'
+
+import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
+```
+I'm not going to go into detail describing each import. That would be like republishing the [docs for dndkit](https://docs.dndkit.com/), but feel free to read the docs and dive deeper on anything you want. 
+
+## Client-side React vs Next.js 
+
+Before I share the rest of the component code, I need to highlight one important difference between client-side React and Next.js. 
+
+A traditional React app is all client-side code and can use the DndContext I show imported above. 
+
+Next.js will do a server-side render of your component first - even if you use the `"use client"` directive. This will cause a `hydration mismatch` warning when you drag and drop because you are moving around DOM elements. 
+
+If you're using Next.js, you will want to use a dynamic import instead of importing `DndContext` directly. 
+
+Add this to your code: 
+```tsx 
+import dynamic from 'next/dynamic' 
+// rest of imports here
+
+const DndContextWithNoSSR = dynamic(() => import('@dnd-kit/core').then(mod => mod.DndContext), { ssr: false })
+``` 
+Now, instead of the `DndContext` import, you will use `DndContextWithNoSSR`. 
+
+## List Component State &amp; Functions 
+
+Below is the logic for the List component. It boils down to two state variables and four functions. 
+
+For the most part, these examples are basic variations of what you will find in the documentation. However, what I believe is worthy to highlight is how the `sequence` and `id` properties interact. 
+
+```tsx 
+export function List({ data }: Props) {
+    const [items, setItems] = useState(data)
+    const [activeItem, setActiveItem] = useState<Item | undefined>(undefined)
+
+    // for input methods detection
+    const sensors = useSensors(useSensor(PointerSensor), useSensor(TouchSensor))
+
+    const removeItem = (id: number) => {
+        const updated = items.filter(item => item.id !== id).map((item, i) => ({ ...item, sequence: i + 1 }))
+
+        setItems(updated)
+    }
+
+    // triggered when dragging starts
+    const handleDragStart = (event: DragStartEvent) => {
+        const { active } = event
+        setActiveItem(items?.find(item => item.sequence === active.id))
+    }
+
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event
+
+        if (!over) return
+
+        const activeItem = items.find(ex => ex.sequence === active.id)
+        const overItem = items.find(ex => ex.sequence === over.id)
+
+        if (!activeItem || !overItem) {
+            return
+        }
+
+        const activeIndex = items.findIndex(ex => ex.sequence === active.id)
+        const overIndex = items.findIndex(ex => ex.sequence === over.id)
+
+        if (activeIndex !== overIndex) {
+            setItems(prev => {
+                const updatedWorkoutData = arrayMove(prev, activeIndex, overIndex).map((ex, i) => ({ ...ex, sequence: i + 1 }))
+
+                return updatedWorkoutData
+            })
+        }
+        setActiveItem(undefined)
+    }
+
+    const handleDragCancel = () => {
+        setActiveItem(undefined)
+    }
+// rest of component code here
+```
+
+## List Component Return Value 
+
+Not too leave anything out, here is the return value of the List component. 
+
+Note, this example is using the `DndContextWithNoSSR` import for Next.js. If you are using client-side React, you can use `DndContext` instead of `DndContextWithNoSSR`.
+
+```tsx 
+return (
+        <div className="flex flex-col gap-2 w-1/2 mx-auto">
+            {items?.length ? (
+                <DndContextWithNoSSR
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragStart={handleDragStart}
+                    onDragEnd={handleDragEnd}
+                    onDragCancel={handleDragCancel}
+                >
+                    <SortableContext
+                        items={items.map(item => item.sequence)}
+                        strategy={verticalListSortingStrategy}
+                    >
+                        {items.map(item => (
+                            <SortableRow
+                                key={item.id}
+                                item={item}
+                                removeItem={removeItem}
+                            />
+                        ))}
+                    </SortableContext>
+
+                    <DragOverlay adjustScale style={{ transformOrigin: "0 0 " }}>
+                        {activeItem ? (
+                            <SortableRow
+                                item={activeItem}
+                                removeItem={removeItem}
+                                forceDragging={true}
+                            />
+                        ) : null}
+                    </DragOverlay>
+                </DndContextWithNoSSR>
+            ) : null}
+        </div>
+    )
+}
+```
+## SortableRow Component 
+
+You've surely noticed there is a `SortableRow` component in the example above that I did not show with the other imports. 
+
+Let's take a look at it and don't forget to import it in your List component after you create it. 
+
+This component doesn't stray far from the typical examples I have seen, but again, I want to highlight where the `sequence` value comes into play.
+
+```tsx 
+import { XIcon } from 'lucide-react'
+
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+
+import { Button } from './ui/button'
+
+import type { Item } from "./List"
+
+type Props = {
+    item: Item,
+    removeItem: (id: number) => void,
+    forceDragging?: boolean,
+}
+
+export function SortableRow({ item, removeItem, forceDragging = false }: Props) {
+
+    const {
+        attributes,
+        isDragging,
+        listeners,
+        setNodeRef,
+        setActivatorNodeRef,
+        transform,
+        transition
+    } = useSortable({
+        id: item.sequence,
+    })
+
+    const parentStyles = {
+        transform: CSS.Transform.toString(transform),
+        transition: transition || undefined,
+        opacity: isDragging ? "0.4" : "1",
+        lineHeight: "4",
+    }
+
+    const draggableStyles = {
+        cursor: isDragging || forceDragging ? "grabbing" : "grab",
+    }
+
+    return (
+        <article
+            className="flex flex-col w-full gap-2 [&:not(:first-child)]:pt-2" ref={setNodeRef}
+            style={parentStyles}
+        >
+            <div className="bg-secondary w-full rounded-md flex items-center gap-2 overflow-hidden">
+
+                <div className="bg-ring w-12 h-full flex items-center">
+                    <p className="w-full text-center text-secondary">{item.sequence}</p>
+                </div>
+
+                <div
+                    ref={setActivatorNodeRef}
+                    className="flex-grow p-2"
+                    style={draggableStyles}
+                    {...attributes} {...listeners}
+                >
+                    <h2 className="text-lg">
+                        {item.title}
+                    </h2>
+                    <p className="text-sm">{item.artist}</p>
+                </div>
+
+                <div className="w-12 h-full flex items-center">
+                    <Button
+                        type="button"
+                        size="icon"
+                        variant="outline"
+                        onClick={() => removeItem(item.id)}
+                    >
+                        <XIcon className="text-red-500" />
+                    </Button>
+                </div>
+
+            </div>
+
+        </article>
+    )
+}
+```
+
+## Where to Go Next 
+
+Admittedly, some of this article is a big of a code dump. If you are trying to learn more about each detail of [dndkit](https://dndkit.com/), I recommend you read the [docs](https://dndkit.com/docs/overview) as they do hold a lot of information. 
+
+My goal in sharing this article was to provide what I could not quickly find - an example of using [dndkit](https://dndkit.com/) where you do not change the `id` value of your data and instead, work with a separate `sequence` value.
+
+If you were looking for the same thing, I hope this article has helped you.
+
+
