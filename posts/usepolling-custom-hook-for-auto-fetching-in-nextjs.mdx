@@ -109,7 +109,7 @@ Inside the `useEffect` hook, I create an interval that will call the `router.ref
 
 The `intervalId` is returned by the `setInterval` function and is used to clear the interval when the component is unmounted. 
 
-The `useEffect` hook has an empty dependency array `[]` so it will only run once on mount. However, the interval will continue to run at the defined interval until the component is unmounted.
+The `useEffect` hook has an empty dependency array `[]` so it will only run once on mount. However, the function inside of setInterval will continue to run at the defined `ms` interval until the component is unmounted.
 
 Wait... you might be asking yourself, _"Where is the fetch code?"_ 
 
@@ -155,15 +155,15 @@ export default function ClientComp({
 ```
 I start this component by importing the `usePolling` custom hook.
 
-Then, inside the body of the component, I call the `usePolling` function with a desired interval of 3000 milliseconds (3 seconds). 
+Then, inside the body of the component, I call the `usePolling` hook with a desired interval of 3000 milliseconds (3 seconds). 
 
-The `usePolling` function will call `router.refresh()` every 3 seconds. 
+The `usePolling` hook will call `router.refresh()` every 3 seconds. 
 
 This interval may be shorter than most would desire, but it works well for the example. 
 
 Whichever data is received from the server is then mapped over and displayed.
 
-Note: In this example, there is a 1 in 3 chance that the data will be the same as the last time it was fetched. That said, it should change often enough to see the polling in action.
+Note: In this example, there is a 1 in 3 chance that the data will be the same as the last time it was fetched. That said, it should change often enough to see polling in action.
 
 ## Where to Go Next 
 
