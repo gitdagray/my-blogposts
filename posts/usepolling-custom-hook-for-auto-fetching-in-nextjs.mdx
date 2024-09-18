@@ -1,0 +1,189 @@
+---
+title: 'usePolling: Custom Hook for Auto-Fetching in Next.js'
+description: 'Learn how to auto-refetch data in Next.js with a custom hook.'
+date: '2024-09-18'
+modified: '2024-09-18'
+tags: ['fetch','nextjs','react','hook','polling']
+cover_image: true
+---
+
+**TLDR:** Learn how to auto-refetch data in Next.js with a custom hook.
+
+## What is Polling?
+
+According to the [Redux Toolkit docs](https://redux-toolkit.js.org/rtk-query/usage/polling), _"polling is a way to automatically refetch data in your application"_.
+
+Polling is a feature available in several libraries including [Redux Toolkit](https://redux-toolkit.js.org/rtk-query/usage/polling), [SWR](https://swr.vercel.app/docs/revalidation#revalidate-on-interval) and [TanStack Query](https://tanstack.com/query/latest/docs/framework/react/guides/important-defaults#important-defaults).
+
+SWR calls the feature _Revalidate on Interval_ and TanStack Query calls it _refetchInterval_. 
+
+No matter the name or library, it all refers to refetching data at a set interval in your application. 
+
+## But Do You Need a Library for Polling? 
+
+Not really. All of the mentioned libraries above do offer some extra features that you may find useful though. 
+
+That said, I'm going to show you how to use a custom hook to implement polling in Next.js without an additional library. 
+
+## Fetch Data in a Server Component 
+
+One key difference between the aforementioned libraries and what I'm about to show you is where the data is fetched. 
+
+The libraries I mentioned above all fetch data client-side. That is the _traditional_ way to do things in React. 
+
+In Next.js, fetching data in a server component is preferred. 
+
+A quick example: 
+
+```tsx
+// page.tsx 
+import ClientComp from "@/app/ClientComp";
+
+const fetchData = async (url: string) => {
+  const res = await fetch(url, { next: { revalidate: 0 } });
+  const json = await res.json();
+  return json[0]
+}
+
+const urlObj = {
+  1: "https://jsonplaceholder.typicode.com/posts",
+  2: "https://jsonplaceholder.typicode.com/todos",
+  3: "https://jsonplaceholder.typicode.com/users",
+}
+
+export default async function Home() {
+
+  const randomInt = Math.floor(Math.random() * 3) + 1;
+
+  const url = urlObj[randomInt as keyof typeof urlObj]
+
+  const data = await fetchData(url)
+
+  return (
+    <ClientComp data={data} />
+  );
+}
+```
+In the example above, I start by importing a `ClientComp` component that I will review in a moment.
+
+Next, I create a `fetchData` function that will fetch data from a provided URL. 
+
+For this example, I also create a lookup object with three URLs.
+
+Then, in the body of the `Home` component, I generate a random number between 1 and 3 and use that number to fetch data from the URL in the lookup object. 
+
+Finally, I pass the returned data to the `ClientComp` component.
+
+The random changing of the returned data makes it easier to see polling in action. 
+
+## usePolling Custom Hook 
+
+React hooks can only be used in client-side components. 
+
+Before we look at the `ClientComp` component, let's look at the `usePolling` custom hook. 
+
+Here is the code for the `usePolling` custom hook:
+
+```ts
+// usePolling.ts
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
+
+export function usePolling(ms: number) {
+    const router = useRouter()
+
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            router.refresh()
+        }, ms)
+
+        return () => clearInterval(intervalId)
+    }, [])
+}
+```
+To begin, I import the `useEffect` hook from `react` and the `useRouter` hook from `next/navigation`.
+
+The `usePolling` function receives a parameter with the number of milliseconds to wait between each fetch. 
+
+Inside the `useEffect` hook, I create an interval that will call the `router.refresh()` function every `ms` milliseconds. 
+
+The `intervalId` is returned by the `setInterval` function and is used to clear the interval when the component is unmounted. 
+
+The `useEffect` hook has an empty dependency array `[]` so it will only run once on mount. However, the interval will continue to run at the defined interval until the component is unmounted.
+
+Wait... you might be asking yourself, _"Where is the fetch code?"_ 
+
+To understand how the data is refetched with this hook, it is important to understand how `router.refresh()` works in Next.js.
+
+According to the [Next.js docs](https://nextjs.org/docs/app/api-reference/functions/use-router), `router.refresh()` (will) _"Refresh the current route. Making a new request to the server, re-fetching data requests, and re-rendering Server Components. The client will merge the updated React Server Component payload without losing unaffected client-side React (e.g. useState) or browser state (e.g. scroll position)_".
+
+That gives us what we need! 
+
+## Client Component 
+
+```tsx
+// ClientComp.tsx
+"use client"
+
+import { usePolling } from "@/app/hooks/usePolling"
+
+export default function ClientComp({
+    data
+}: {
+    data: { [key: string]: string | number | boolean }
+}) {
+    usePolling(3000)
+
+    return (
+        <ul>
+            {Object.keys(data).map((key, idx) => {
+                const value = data[key]
+                return (
+                    <li key={idx}>{key}:
+                        {typeof value === 'object'
+                            ? Object.keys(value).map((k, i) => {
+                                return <li className="ml-8" key={`${k}_${i}`}>{k}: {typeof value[k] === 'object' ? JSON.stringify(value[k]) : value[k]}</li>
+                            })
+                            : value
+                        }
+                    </li>
+                )
+            })}
+        </ul>
+    )
+}
+```
+I start this component by importing the `usePolling` custom hook.
+
+Then, inside the body of the component, I call the `usePolling` function with a desired interval of 3000 milliseconds (3 seconds). 
+
+The `usePolling` function will call `router.refresh()` every 3 seconds. 
+
+This interval may be shorter than most would desire, but it works well for the example. 
+
+Whichever data is received from the server is then mapped over and displayed.
+
+Note: In this example, there is a 1 in 3 chance that the data will be the same as the last time it was fetched. That said, it should change often enough to see the polling in action.
+
+## Where to Go Next 
+
+I recommend checking out the polling features in the libraries I mentioned above: 
+- [SWR](https://swr.vercel.app/docs/revalidation#revalidate-on-interval)
+- [TanStack Query](https://tanstack.com/query/latest/docs/framework/react/guides/important-defaults#important-defaults)
+- [Redux Toolkit](https://redux-toolkit.js.org/rtk-query/usage/polling)
+
+Next.js is a React framework and supports all of those libraries. 
+
+The goal of this article was to show how to implement polling in Next.js without an additional library.
+
+If you were looking for the same thing, I hope this article has helped you.
+
+## Video Tutorial
+
+<Video id="thQ-6hFpd4I" />
+
+I created a video tutorial based on this article, too. 
+
+Check it out! 
+
+
